@@ -26,6 +26,8 @@ using TownOfUs.CrewmateRoles.ImitatorMod;
 using TownOfUs.CrewmateRoles.AurialMod;
 using Reactor.Networking;
 using Reactor.Networking.Extensions;
+using System.Reflection;
+using System.IO;
 
 namespace TownOfUs
 {
@@ -33,6 +35,7 @@ namespace TownOfUs
     public static class Utils
     {
         internal static bool ShowDeadBodies = false;
+        public static string previousEndGameSummary = "";
         private static GameData.PlayerInfo voteTarget = null;
 
         public static void Morph(PlayerControl player, PlayerControl MorphedPlayer, bool resetAnim = false)
@@ -1113,6 +1116,12 @@ namespace TownOfUs
         class StartMeetingPatch {
             public static void Prefix(PlayerControl __instance, [HarmonyArgument(0)]GameData.PlayerInfo meetingTarget) {
                 voteTarget = meetingTarget;
+
+                // Close In-Game Settings Display if open
+                CustomOption.Patches.HudManagerUpdate.CloseSettings();
+
+                // Reset zoomed out ghosts
+                toggleZoom(reset: true);
             }
         }
 
@@ -1411,6 +1420,81 @@ namespace TownOfUs
                 whisperer.LastWhispered = DateTime.UtcNow;
             }
             #endregion
+        }
+
+        public static void UpdateVentPosition() {
+            if (!ShipStatus.Instance) return;
+            if (GameOptionsManager.Instance.currentNormalGameOptions.MapId != 2) return;
+
+            Vent bathroomVent = GameObject.FindObjectsOfType<Vent>().ToList().FirstOrDefault(x => x.name == "BathroomVent");
+            if (bathroomVent == null) return;
+            
+            Vector3 initialBathroomVentPos = bathroomVent.transform.localPosition;
+            bathroomVent.transform.localPosition = new Vector3(initialBathroomVentPos.x, initialBathroomVentPos.y - 1.2f, initialBathroomVentPos.z);
+        }
+
+        [HarmonyPatch(typeof(MapBehaviour))]
+        static class MapBehaviourPatch {
+            [HarmonyPatch(typeof(MapBehaviour), nameof(MapBehaviour.FixedUpdate))]
+            static void Postfix(MapBehaviour __instance) {
+                // Close In-Game Settings Display on map open
+                CustomOption.Patches.HudManagerUpdate.CloseSettings();
+            }
+        }
+
+        public static bool zoomOutStatus = false;
+        public static void toggleZoom(bool reset = false) {
+            float orthographicSize = reset || zoomOutStatus ? 3f : 12f;
+
+            zoomOutStatus = !zoomOutStatus && !reset;
+            Camera.main.orthographicSize = orthographicSize;
+            foreach (var cam in Camera.allCameras) {
+                if (cam != null && cam.gameObject.name == "UI Camera") cam.orthographicSize = orthographicSize;  // The UI is scaled too, else we cant click the buttons. Downside: map is super small.
+            }
+
+            var tzGO = GameObject.Find("TOGGLEZOOMBUTTON");
+            if (tzGO != null) {
+                SpriteRenderer rend = tzGO.GetComponent<SpriteRenderer>();
+                rend.sprite = zoomOutStatus ? loadSpriteFromResources("TownOfUs.Resources.PlusButton.png", 175f) : loadSpriteFromResources("TownOfUs.Resources.MinusButton.png", 175f);
+                tzGO.transform.localPosition = zoomOutStatus ? HudManager.Instance.UseButton.transform.localPosition + new Vector3(0f, 3f, 0) : HudManager.Instance.UseButton.transform.localPosition + new Vector3(0.4f, 2.8f, 0);
+            }
+            ResolutionManager.ResolutionChanged.Invoke((float)Screen.width / Screen.height, Screen.width, Screen.height, Screen.fullScreen); // This will move button positions to the correct position.
+        }
+
+        public static int LineCount(string text) {
+            return text.Count(c => c == '\n');
+        }
+
+        public static Dictionary<string, Sprite> CachedSprites = new();
+
+        public static Sprite loadSpriteFromResources(string path, float pixelsPerUnit, bool cache=true) {
+            try
+            {
+                if (cache && CachedSprites.TryGetValue(path + pixelsPerUnit, out var sprite)) return sprite;
+                Texture2D texture = loadTextureFromResources(path);
+                sprite = Sprite.Create(texture, new Rect(0, 0, texture.width, texture.height), new Vector2(0.5f, 0.5f), pixelsPerUnit);
+                if (cache) sprite.hideFlags |= HideFlags.HideAndDontSave | HideFlags.DontSaveInEditor;
+                if (!cache) return sprite;
+                return CachedSprites[path + pixelsPerUnit] = sprite;
+            } catch {
+                System.Console.WriteLine("Error loading sprite from path: " + path);
+            }
+            return null;
+        }
+        public static unsafe Texture2D loadTextureFromResources(string path) {
+            try {
+                Texture2D texture = new Texture2D(2, 2, TextureFormat.ARGB32, true);
+                Assembly assembly = Assembly.GetExecutingAssembly();
+                Stream stream = assembly.GetManifestResourceStream(path);
+                var length = stream.Length;
+                var byteTexture = new Il2CppStructArray<byte>(length);
+                stream.Read(new Span<byte>(IntPtr.Add(byteTexture.Pointer, IntPtr.Size * 4).ToPointer(), (int) length));
+                ImageConversion.LoadImage(texture, byteTexture, false);
+                return texture;
+            } catch {
+                System.Console.WriteLine("Error loading texture from resources: " + path);
+            }
+            return null;
         }
     }
 }

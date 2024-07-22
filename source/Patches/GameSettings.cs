@@ -7,63 +7,66 @@ using TownOfUs.CustomOption;
 using AmongUs.GameOptions;
 using System.Linq;
 using UnityEngine;
+using System;
 
 namespace TownOfUs
 {
     [HarmonyPatch]
-    public static class GameSettings
+    class GameSettings
     {
+        private static string buildOptionsOfType(MultiMenu menu)
+        {
+            StringBuilder sb = new StringBuilder("\n");
+            var options = CustomOption.CustomOption.AllOptions.Where(o => o.Menu == menu);
+
+            foreach (var option in options) {
+                if (option.Type == CustomOptionType.Button)
+                    continue;
+                
+                if (option.Type == CustomOptionType.Header)
+                    sb.AppendLine($"\n{option.Name}");
+                else
+                    sb.AppendLine($"    {option.Name}: {option}");
+            }
+
+            return sb.ToString();
+        }
+
         public static int SettingsPage = -1;
+        public static string buildAllOptions(string vanillaSettings = "", bool hideExtras = false)
+        {
+            if (vanillaSettings == "")
+                vanillaSettings = GameOptionsManager.Instance.CurrentGameOptions.ToHudString(PlayerControl.AllPlayerControls.Count);
+            
+            string hudString = SettingsPage != -1 && !hideExtras ? (DateTime.Now.Second % 2 == 0 ? $"<color=#{Color.white.ToHtmlStringRGBA()}>(Use scroll wheel if necessary)</color>\n\n" : $"<color=#{Color.red.ToHtmlStringRGBA()}>(Use scroll wheel if necessary)</color>\n\n") : "";
+
+            if (SettingsPage == -1) {
+                var num = RoleManager.Instance.AllRoles.Count(x => x.Role != RoleTypes.Crewmate && x.Role != RoleTypes.Impostor && x.Role != RoleTypes.CrewmateGhost && x.Role != RoleTypes.ImpostorGhost);
+                for (int i = 0; i < num; i++) {
+                    vanillaSettings = vanillaSettings.Remove(vanillaSettings.LastIndexOf("\n"), 1).Remove(vanillaSettings.LastIndexOf(":"), 1);
+                }
+                hudString += (!hideExtras ? "" : "Page 1: Vanilla Settings \n\n") + vanillaSettings;
+            }
+            else if (SettingsPage == 0)
+                hudString += "Page 2: Town Of Us Settings" + buildOptionsOfType(MultiMenu.main);
+            else if (SettingsPage == 1)
+                hudString += "Page 3: Crewmate Roles Settings" + buildOptionsOfType(MultiMenu.crewmate);
+            else if (SettingsPage == 2)
+                hudString += "Page 4: Neutral Roles Settings" + buildOptionsOfType(MultiMenu.neutral);
+            else if (SettingsPage == 3)
+                hudString += "Page 5: Impostor Roles Settings" + buildOptionsOfType(MultiMenu.imposter);
+            else if (SettingsPage == 4)
+                hudString += "Page 6: Modifiers Settings" + buildOptionsOfType(MultiMenu.modifiers);
+            
+            if (!hideExtras || SettingsPage != -1) hudString += $"\n Press TAB or Page Number for more... ({SettingsPage + 2}/6)";
+            return hudString;
+        }
 
         [HarmonyPatch(typeof(IGameOptionsExtensions), nameof(IGameOptionsExtensions.ToHudString))]
-        private static class GameOptionsDataPatch
+        private static void Postfix(ref string __result)
         {
-            public static IEnumerable<MethodBase> TargetMethods()
-            {
-                return typeof(GameOptionsData).GetMethods(typeof(string), typeof(int));
-            }
-
-            private static void Postfix(ref string __result)
-            {
-                if (GameOptionsManager.Instance.CurrentGameOptions.GameMode == GameModes.HideNSeek) return;
-
-                var builder = new StringBuilder();
-                builder.AppendLine("Press Tab To Change Page");
-                builder.AppendLine($"Currently Viewing Page ({(SettingsPage + 2)}/6)");
-                if (SettingsPage == 0) builder.AppendLine("General Mod Settings");
-                else if (SettingsPage == 1) builder.AppendLine("Crewmate Settings");
-                else if (SettingsPage == 2) builder.AppendLine("Neutral Settings");
-                else if (SettingsPage == 3) builder.AppendLine("Impostor Settings");
-                else if (SettingsPage == 4) builder.AppendLine("Modifier Settings");
-
-                if (SettingsPage == -1)
-                {
-                    var num = RoleManager.Instance.AllRoles.Count(
-                            x => x.Role != RoleTypes.Crewmate && x.Role != RoleTypes.Impostor && x.Role != RoleTypes.CrewmateGhost && x.Role != RoleTypes.ImpostorGhost);
-
-                    for (int i = 0; i < num; i++)
-                    {
-                        __result = __result.Remove(__result.LastIndexOf("\n"), 1).Remove(__result.LastIndexOf(":"), 1);
-                    }
-                    builder.Append(new StringBuilder(__result));
-                }
-
-                else
-                {
-                    foreach (var option in CustomOption.CustomOption.AllOptions.Where(x => x.Menu == (MultiMenu)SettingsPage))
-                    {
-                        if (option.Type == CustomOptionType.Button)
-                            continue;
-
-                        if (option.Type == CustomOptionType.Header)
-                            builder.AppendLine($"\n{option.Name}");
-                        else
-                            builder.AppendLine($"    {option.Name}: {option}");
-                    }
-                }
-
-                __result = $"<size=1.25>{builder.ToString()}</size>";
-            }
+            if (GameOptionsManager.Instance.currentGameOptions.GameMode == AmongUs.GameOptions.GameModes.HideNSeek) return; // Allow Vanilla Hide N Seek
+            __result = buildAllOptions(vanillaSettings:__result);
         }
 
         [HarmonyPatch(typeof(GameOptionsMenu), nameof(GameOptionsMenu.Update))]
@@ -74,20 +77,55 @@ namespace TownOfUs
                 __instance.GetComponentInParent<Scroller>().ContentYBounds.max = (__instance.Children.Length - 6.5f) / 2;
             }
         }
+    }
 
-        [HarmonyPatch(typeof(HudManager), nameof(HudManager.Update))]
-        public class LobbyPatch
+    [HarmonyPatch(typeof(KeyboardJoystick), nameof(KeyboardJoystick.Update))]
+    public static class GameOptionsNextPagePatch
+    {
+        public static void Postfix(KeyboardJoystick __instance)
         {
-            public static void Postfix(HudManager __instance)
-            {
-                if (Input.GetKeyDown(KeyCode.Tab))
-                {
-                    if (SettingsPage > 3)
-                        SettingsPage = -1;
-                    else
-                        SettingsPage++;
-                }
+            if (Input.GetKeyDown(KeyCode.Tab)) {
+                GameSettings.SettingsPage++;
+                if (GameSettings.SettingsPage == 5) GameSettings.SettingsPage = -1;
             }
+            if (Input.GetKeyDown(KeyCode.LeftShift)) {
+                GameSettings.SettingsPage--;
+                if (GameSettings.SettingsPage == -2) GameSettings.SettingsPage = 4;
+            }
+            if (Input.GetKeyDown(KeyCode.Alpha1) || Input.GetKeyDown(KeyCode.Keypad1)) {
+                GameSettings.SettingsPage = -1;
+            }
+            if (Input.GetKeyDown(KeyCode.Alpha2) || Input.GetKeyDown(KeyCode.Keypad2)) {
+                GameSettings.SettingsPage = 0;
+            }
+            if (Input.GetKeyDown(KeyCode.Alpha3) || Input.GetKeyDown(KeyCode.Keypad3)) {
+                GameSettings.SettingsPage = 1;
+            }
+            if (Input.GetKeyDown(KeyCode.Alpha4) || Input.GetKeyDown(KeyCode.Keypad4)) {
+                GameSettings.SettingsPage = 2;
+            }
+            if (Input.GetKeyDown(KeyCode.Alpha5) || Input.GetKeyDown(KeyCode.Keypad5)) {
+                GameSettings.SettingsPage = 3;
+            }
+            if (Input.GetKeyDown(KeyCode.Alpha6) || Input.GetKeyDown(KeyCode.Keypad6)) {
+                GameSettings.SettingsPage = 4;
+            }
+
+            if (Input.GetKeyDown(KeyCode.F1))
+                CustomOption.Patches.HudManagerUpdate.ToggleSettings(HudManager.Instance);
+                
+            if (Input.GetKeyDown(KeyCode.F2))
+                CustomOption.Patches.HudManagerUpdate.ToggleSummary(HudManager.Instance);
+                
+            if (Input.GetKeyDown(KeyCode.KeypadPlus))
+                Utils.toggleZoom();
+        }
+    }
+
+    [HarmonyPatch(typeof(HudManager), nameof(HudManager.Update))]
+    public class GameSettingsScalePatch {
+        public static void Prefix(HudManager __instance) {
+            if (__instance.GameSettings != null) __instance.GameSettings.fontSize = 1.2f; 
         }
     }
 }

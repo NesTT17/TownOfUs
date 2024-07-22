@@ -39,6 +39,8 @@ namespace TownOfUs.Patches {
 
         public static void Postfix(AmongUsClient __instance, [HarmonyArgument(0)] EndGameResult endGameResult)
         {
+            // Reset zoomed out ghosts
+            Utils.toggleZoom(reset: true);
             if (CameraEffect.singleton) CameraEffect.singleton.materials.Clear();
             AdditionalTempData.clear();
             var playerRole = "";
@@ -271,6 +273,7 @@ namespace TownOfUs.Patches {
                 }
             }
 
+
             TMPro.TMP_Text roleSummaryTextMesh = roleSummary.GetComponent<TMPro.TMP_Text>();
             roleSummaryTextMesh.alignment = TMPro.TextAlignmentOptions.TopLeft;
             roleSummaryTextMesh.color = Color.white;
@@ -278,6 +281,8 @@ namespace TownOfUs.Patches {
             roleSummaryTextMesh.fontSizeMax = 1.5f;
             roleSummaryTextMesh.fontSize = 1.5f;
              
+            Utils.previousEndGameSummary = roleSummaryText.ToString();
+            
             var roleSummaryTextMeshRectTransform = roleSummaryTextMesh.GetComponent<RectTransform>();
             roleSummaryTextMeshRectTransform.anchoredPosition = new Vector2(position.x + 3.5f, position.y - 0.1f);
             roleSummaryTextMesh.text = roleSummaryText.ToString();

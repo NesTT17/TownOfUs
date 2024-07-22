@@ -31,7 +31,7 @@ namespace TownOfUs
     public class TownOfUs : BasePlugin
     {
         public const string Id = "com.slushiegoose.townofus";
-        public const string VersionString = "5.0.4";
+        public const string VersionString = "5.0.4.2";
         public static System.Version Version = System.Version.Parse(VersionString);
 
         public static AssetLoader bundledAssets;
@@ -109,9 +109,6 @@ namespace TownOfUs
         public static Sprite UpdateTOUButton;
         public static Sprite UpdateSubmergedButton;
 
-        public static Sprite ZoomPlusButton;
-        public static Sprite ZoomMinusButton;
-
         public static Vector3 ButtonPosition { get; private set; } = new Vector3(2.6f, 0.7f, -9f);
 
         private static DLoadImage _iCallLoadImage;
@@ -136,7 +133,7 @@ namespace TownOfUs
             bundledAssets = new();
 
             JanitorClean = CreateSprite("TownOfUs.Resources.Janitor.png");
-            EngineerFix = CreateSprite("TownOfUs.Resources.Engineer.png");
+            EngineerFix = CreateSprite("TownOfUs.Resources.Engineer.png", 115f);
             SwapperSwitch = CreateSprite("TownOfUs.Resources.SwapperSwitch.png");
             SwapperSwitchDisabled = CreateSprite("TownOfUs.Resources.SwapperSwitchDisabled.png");
             Footprint = CreateSprite("TownOfUs.Resources.Footprint.png");
@@ -144,7 +141,7 @@ namespace TownOfUs
             MedicSprite = CreateSprite("TownOfUs.Resources.Medic.png");
             SeerSprite = CreateSprite("TownOfUs.Resources.Seer.png");
             SampleSprite = CreateSprite("TownOfUs.Resources.Sample.png");
-            MorphSprite = CreateSprite("TownOfUs.Resources.Morph.png");
+            MorphSprite = CreateSprite("TownOfUs.Resources.Morph.png", 115f);
             Arrow = CreateSprite("TownOfUs.Resources.Arrow.png");
             MineSprite = CreateSprite("TownOfUs.Resources.Mine.png");
             SwoopSprite = CreateSprite("TownOfUs.Resources.Swoop.png");
@@ -208,9 +205,6 @@ namespace TownOfUs
             UpdateTOUButton = CreateSprite("TownOfUs.Resources.UpdateToUButton.png");
             UpdateSubmergedButton = CreateSprite("TownOfUs.Resources.UpdateSubmergedButton.png");
 
-            ZoomPlusButton = CreateSprite("TownOfUs.Resources.Plus.png");
-            ZoomMinusButton = CreateSprite("TownOfUs.Resources.Minus.png");
-
             PalettePatch.Load();
             ClassInjector.RegisterTypeInIl2Cpp<RainbowBehaviour>();
 
@@ -241,9 +235,8 @@ namespace TownOfUs
             SubmergedCompatibility.Initialize();
         }
 
-        public static Sprite CreateSprite(string name)
+        public static Sprite CreateSprite(string name, float ppU = 100f)
         {
-            var pixelsPerUnit = 100f;
             var pivot = new Vector2(0.5f, 0.5f);
 
             var assembly = Assembly.GetExecutingAssembly();
@@ -252,7 +245,7 @@ namespace TownOfUs
             var img = imageStream.ReadFully();
             LoadImage(tex, img, true);
             tex.DontDestroy();
-            var sprite = Sprite.Create(tex, new Rect(0.0f, 0.0f, tex.width, tex.height), pivot, pixelsPerUnit);
+            var sprite = Sprite.Create(tex, new Rect(0.0f, 0.0f, tex.width, tex.height), pivot, ppU);
             sprite.DontDestroy();
             return sprite;
         }

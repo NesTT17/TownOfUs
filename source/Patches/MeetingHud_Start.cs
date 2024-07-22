@@ -17,17 +17,6 @@ namespace TownOfUs
             {
                 player.MyPhysics.ResetAnimState();
             }
-
-            HudUpdate.Zooming = false;
-            Camera.main.orthographicSize = 3f;
-
-            foreach (var cam in Camera.allCameras)
-            {
-                if (cam?.gameObject.name == "UI Camera")
-                    cam.orthographicSize = 3f;
-            }
-
-            ResolutionManager.ResolutionChanged.Invoke((float)Screen.width / Screen.height, Screen.width, Screen.height, Screen.fullScreen);
         }
     }
 

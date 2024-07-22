@@ -4,6 +4,7 @@ using HarmonyLib;
 using Reactor.Utilities.Extensions;
 using Il2CppInterop.Runtime.InteropTypes.Arrays;
 using UnityEngine;
+using TownOfUs.Roles;
 
 namespace TownOfUs.CustomOption
 {
@@ -16,7 +17,6 @@ namespace TownOfUs.CustomOption
         public static Import ImportButton;
         public static List<OptionBehaviour> DefaultOptions;
         public static float LobbyTextRowHeight { get; set; } = 0.081F;
-
 
         private static List<OptionBehaviour> CreateOptions(GameOptionsMenu __instance, MultiMenu type)
         {
@@ -503,7 +503,7 @@ namespace TownOfUs.CustomOption
         }
 
         [HarmonyPatch(typeof(HudManager), nameof(HudManager.Update))]
-        private class HudManagerUpdate
+        public class HudManagerUpdate
         {
             private const float
                 MinX = -5.233334F /*-5.3F*/,
@@ -577,6 +577,204 @@ namespace TownOfUs.CustomOption
 
                 Scroller.Inner = __instance.GameSettings.transform;
                 __instance.GameSettings.transform.SetParent(Scroller.transform);
+            }
+
+            [HarmonyPrefix]
+            public static void Prefix2(HudManager __instance) {
+                if (!settingsTMPs[0]) return;
+                foreach (var tmp in settingsTMPs) tmp.text = "";
+                var settingsString = GameSettings.buildAllOptions(hideExtras: true);
+                var blocks = settingsString.Split("\n\n", System.StringSplitOptions.RemoveEmptyEntries);
+                string curString = "";
+                string curBlock;
+                int j = 0;
+                for (int i = 0; i < blocks.Length; i++) {
+                    curBlock = blocks[i];
+                    if (Utils.LineCount(curBlock) + Utils.LineCount(curString) < 60) {
+                        curString += curBlock + "\n\n";
+                    } else {
+                        settingsTMPs[j].text = curString;
+                        j++;
+
+                        curString = "\n" + curBlock + "\n\n";
+                        if (curString.Substring(0, 2) != "\n\n") curString = "\n" + curString;
+                    }
+                }
+                if (j < settingsTMPs.Length) settingsTMPs[j].text = curString;
+                int blockCount = 0;
+                foreach (var tmp in settingsTMPs) {
+                    if (tmp.text != "")
+                        blockCount++;
+                }
+                for (int i = 0; i < blockCount; i++) {
+                    settingsTMPs[i].transform.localPosition = new Vector3(- blockCount * 1.2f + 2.7f * i, 2.9f, -500f);
+                    settingsTMPs[i].text = "<size=85%>" + settingsTMPs[i].text + "</size>";
+                }
+            }
+
+            private static TMPro.TextMeshPro[] settingsTMPs = new TMPro.TextMeshPro[4];
+            private static GameObject settingsBackground;
+            public static void OpenSettings(HudManager __instance) {
+                if (summaryTMPs[0] || __instance.FullScreen == null || MapBehaviour.Instance && MapBehaviour.Instance.IsOpen || GameOptionsManager.Instance.currentGameOptions.GameMode == AmongUs.GameOptions.GameModes.HideNSeek) return;
+                settingsBackground = GameObject.Instantiate(__instance.FullScreen.gameObject, __instance.transform);
+                settingsBackground.SetActive(true);
+                var renderer = settingsBackground.GetComponent<SpriteRenderer>();
+                renderer.color = new Color(0.2f, 0.2f, 0.2f, 0.9f);
+                renderer.enabled = true;
+
+                for (int i = 0; i < settingsTMPs.Length; i++) {
+                    settingsTMPs[i] = GameObject.Instantiate(__instance.KillButton.cooldownTimerText, __instance.transform);
+                    settingsTMPs[i].alignment = TMPro.TextAlignmentOptions.TopLeft;
+                    settingsTMPs[i].enableWordWrapping = false;
+                    settingsTMPs[i].transform.localScale = Vector3.one * 0.25f; 
+                    settingsTMPs[i].gameObject.SetActive(true);
+                }
+            }
+
+            public static void CloseSettings() {
+                foreach (var tmp in settingsTMPs)
+                    if (tmp) tmp.gameObject.Destroy();
+                if (settingsBackground) settingsBackground.Destroy();
+            }
+
+            public static void ToggleSettings(HudManager __instance) {
+                if (settingsTMPs[0]) CloseSettings();
+                else OpenSettings(__instance);
+            }
+
+            static PassiveButton toggleSettingsButton;
+            static GameObject toggleSettingsButtonObject;
+            [HarmonyPostfix]
+            public static void Postfix(HudManager __instance) {
+                if (!toggleSettingsButton || !toggleSettingsButtonObject) {
+                    // add a special button for settings viewing:
+                    toggleSettingsButtonObject = GameObject.Instantiate(__instance.MapButton.gameObject, __instance.MapButton.transform.parent);
+                    toggleSettingsButtonObject.transform.localPosition = __instance.MapButton.transform.localPosition + new Vector3(0, -0.66f, -500f);
+                    toggleSettingsButtonObject.name = "TOGGLESETTINGSBUTTON";
+                    SpriteRenderer renderer = toggleSettingsButtonObject.GetComponent<SpriteRenderer>();
+                    renderer.sprite = Utils.loadSpriteFromResources("TownOfUs.Resources.CurrentSettingsButton.png", 180f);
+                    toggleSettingsButton = toggleSettingsButtonObject.GetComponent<PassiveButton>();
+                    toggleSettingsButton.OnClick.RemoveAllListeners();
+                    toggleSettingsButton.OnClick.AddListener((System.Action)(() => ToggleSettings(__instance)));
+                }
+                toggleSettingsButtonObject.SetActive(__instance.MapButton.gameObject.active && !(MapBehaviour.Instance && MapBehaviour.Instance.IsOpen) && GameOptionsManager.Instance.currentGameOptions.GameMode != AmongUs.GameOptions.GameModes.HideNSeek);
+                toggleSettingsButtonObject.transform.localPosition = __instance.MapButton.transform.localPosition + new Vector3(0, -0.66f, -500f);
+            }
+
+            static PassiveButton toggleZoomButton;
+            static GameObject toggleZoomButtonObject;
+            [HarmonyPostfix]
+            public static void Postfix2(HudManager __instance) {
+                if (!toggleZoomButton || !toggleZoomButtonObject) {
+                    toggleZoomButtonObject = GameObject.Instantiate(__instance.MapButton.gameObject, __instance.MapButton.transform.parent);
+                    toggleZoomButtonObject.transform.localPosition = __instance.MapButton.transform.localPosition + new Vector3(0, -1.32f, -500f);
+                    toggleZoomButtonObject.name = "TOGGLEZOOMBUTTON";
+                    SpriteRenderer renderer = toggleZoomButtonObject.GetComponent<SpriteRenderer>();
+                    renderer.sprite = Utils.loadSpriteFromResources("TownOfUs.Resources.MinusButton.png", 175f);
+                    toggleZoomButton = toggleZoomButtonObject.GetComponent<PassiveButton>();
+                    toggleZoomButton.OnClick.RemoveAllListeners();
+                    toggleZoomButton.OnClick.AddListener((System.Action)(() => Utils.toggleZoom()));
+                }
+
+                bool dead = false;
+                if (Utils.ShowDeadBodies)
+                {
+                    if (PlayerControl.LocalPlayer.Is(RoleEnum.Haunter))
+                    {
+                        var haunter = Role.GetRole<Haunter>(PlayerControl.LocalPlayer);
+                        if (haunter.Caught) dead = true;
+                    }
+                    else if (PlayerControl.LocalPlayer.Is(RoleEnum.Phantom))
+                    {
+                        var phantom = Role.GetRole<Phantom>(PlayerControl.LocalPlayer);
+                        if (phantom.Caught) dead = true;
+                    }
+                    else dead = true;
+                }
+
+                toggleZoomButtonObject.SetActive(__instance.MapButton.gameObject.active && !MeetingHud.Instance && !ExileController.Instance && dead && GameOptionsManager.Instance.currentGameOptions.GameMode != AmongUs.GameOptions.GameModes.HideNSeek && GameOptionsManager.Instance.CurrentGameOptions.GameMode == AmongUs.GameOptions.GameModes.Normal);
+                toggleZoomButtonObject.transform.localPosition = __instance.MapButton.transform.localPosition + new Vector3(0, -1.32f, -500f);
+            }
+
+            [HarmonyPrefix]
+            public static void Prefix3(HudManager __instance) {
+                if (!summaryTMPs[0]) return;
+                foreach (var tmp in summaryTMPs) tmp.text = "";
+                var settingsString = Utils.previousEndGameSummary;
+                var blocks = settingsString.Split("\n\n", System.StringSplitOptions.RemoveEmptyEntries);
+                string curString = "";
+                string curBlock;
+                int j = 0;
+                for (int i = 0; i < blocks.Length; i++) {
+                    curBlock = blocks[i];
+                    if (Utils.LineCount(curBlock) + Utils.LineCount(curString) < 60) {
+                        curString += curBlock + "\n\n";
+                    } else {
+                        summaryTMPs[j].text = curString;
+                        j++;
+
+                        curString = "\n" + curBlock + "\n\n";
+                        if (curString.Substring(0, 2) != "\n\n") curString = "\n" + curString;
+                    }
+                }
+                if (j < summaryTMPs.Length) summaryTMPs[j].text = curString;
+                int blockCount = 0;
+                foreach (var tmp in summaryTMPs) {
+                    if (tmp.text != "")
+                        blockCount++;
+                }
+                for (int i = 0; i < blockCount; i++) {
+                    summaryTMPs[i].transform.localPosition = new Vector3(- blockCount * 1.2f + 2.7f * i, 2.9f, -500f);
+                }
+            }
+
+            private static TMPro.TextMeshPro[] summaryTMPs = new TMPro.TextMeshPro[4];
+            private static GameObject summaryBackground;
+            public static void OpenSummary(HudManager __instance) {
+                if (settingsTMPs[0] || Utils.previousEndGameSummary.IsNullOrWhiteSpace() || !LobbyBehaviour.Instance || __instance.FullScreen == null || MapBehaviour.Instance && MapBehaviour.Instance.IsOpen || GameOptionsManager.Instance.currentGameOptions.GameMode == AmongUs.GameOptions.GameModes.HideNSeek) return;
+                summaryBackground = GameObject.Instantiate(__instance.FullScreen.gameObject, __instance.transform);
+                summaryBackground.SetActive(true);
+                var renderer = summaryBackground.GetComponent<SpriteRenderer>();
+                renderer.color = new Color(0.2f, 0.2f, 0.2f, 0.9f);
+                renderer.enabled = true;
+
+                for (int i = 0; i < summaryTMPs.Length; i++) {
+                    summaryTMPs[i] = GameObject.Instantiate(__instance.KillButton.cooldownTimerText, __instance.transform);
+                    TMPro.TMP_Text summaryTextMesh = summaryTMPs[i].GetComponent<TMPro.TMP_Text>();
+                    summaryTMPs[i].alignment = TMPro.TextAlignmentOptions.TopLeft;
+                    summaryTMPs[i].enableWordWrapping = false;
+                    summaryTMPs[i].transform.localScale = Vector3.one * 0.25f; 
+                    summaryTMPs[i].gameObject.SetActive(true);
+                }
+            }
+
+            public static void CloseSummary() {
+                foreach (var tmp in summaryTMPs)
+                    if (tmp) tmp.gameObject.Destroy();
+                if (summaryBackground) summaryBackground.Destroy();
+            }
+
+            public static void ToggleSummary(HudManager __instance) {
+                if (summaryTMPs[0]) CloseSummary();
+                else OpenSummary(__instance);
+            }
+
+            static PassiveButton toggleSummaryButton;
+            static GameObject toggleSummaryButtonObject;
+            [HarmonyPostfix]
+            public static void Postfix4(HudManager __instance) {
+                if (!toggleSummaryButton || !toggleSummaryButtonObject) {
+                    toggleSummaryButtonObject = GameObject.Instantiate(__instance.MapButton.gameObject, __instance.MapButton.transform.parent);
+                    toggleSummaryButtonObject.transform.localPosition = __instance.MapButton.transform.localPosition + new Vector3(0, -0.66f, -500f);
+                    toggleZoomButtonObject.name = "TOGGLESUMMARYBUTTON";
+                    SpriteRenderer renderer = toggleSummaryButtonObject.GetComponent<SpriteRenderer>();
+                    renderer.sprite = Utils.loadSpriteFromResources("TownOfUs.Resources.Summary.png", 150f);
+                    toggleSummaryButton = toggleSummaryButtonObject.GetComponent<PassiveButton>();
+                    toggleSummaryButton.OnClick.RemoveAllListeners();
+                    toggleSummaryButton.OnClick.AddListener((System.Action)(() => HudManagerUpdate.ToggleSummary(__instance)));
+                }
+                toggleSummaryButtonObject.SetActive(__instance.SettingsButton.gameObject.active && !MeetingHud.Instance && !ExileController.Instance && LobbyBehaviour.Instance && GameOptionsManager.Instance.currentGameOptions.GameMode != AmongUs.GameOptions.GameModes.HideNSeek && GameOptionsManager.Instance.CurrentGameOptions.GameMode == AmongUs.GameOptions.GameModes.Normal);
+                toggleSummaryButtonObject.transform.localPosition = __instance.SettingsButton.transform.localPosition + new Vector3(0, -0.66f, -500f);
             }
         }
     }

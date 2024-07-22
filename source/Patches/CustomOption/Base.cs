@@ -48,8 +48,6 @@ namespace TownOfUs.CustomOption
 
         protected internal void Set(object value, bool SendRpc = true)
         {
-            System.Console.WriteLine($"{Name} set to {value}");
-
             Value = value;
 
             if (Setting != null && AmongUsClient.Instance.AmHost && SendRpc) Rpc.SendRpc(this);

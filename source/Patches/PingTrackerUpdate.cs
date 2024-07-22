@@ -15,11 +15,11 @@ namespace TownOfUs
             position.AdjustPosition();
             var host = GameData.Instance?.GetHost();
 
-            __instance.text.text =
-                "<size=2><color=#00FF00FF>TownOfUs v" + TownOfUs.VersionString + "</color>" + "\n" +
-                $"Ping: {AmongUsClient.Instance?.Ping}ms\n" +
-                $"Improved by <color=#00FF00FF>NesTT</color>\n" + 
-                $"Host: {host?.PlayerName}</size>";
+            if (AmongUsClient.Instance.GameState == InnerNet.InnerNetClient.GameStates.Started) {
+                __instance.text.text = $"<size=90%><color=#018001FF>TownOfUs</size></color> <size=60%>v{TownOfUs.VersionString}\n" + __instance.text.text + "</size>";
+            } else {
+                __instance.text.text = $"<size=90%><color=#018001FF>TownOfUs</size></color> <size=60%>v{TownOfUs.VersionString}\nImproved by <color=#018001FF>NesTT</color>\nHost: {host?.PlayerName}\n" + __instance.text.text + "</size>";
+            }
         }
     }
 }

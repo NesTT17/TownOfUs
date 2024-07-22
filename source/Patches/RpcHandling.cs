@@ -420,7 +420,7 @@ namespace TownOfUs
                 Utils.Rpc(CustomRPC.SetHaunter, byte.MaxValue);
             }
 
-            var toChooseFromNeut = PlayerControl.AllPlayerControls.ToArray().Where(x => (x.Is(Faction.NeutralBenign) || x.Is(Faction.NeutralEvil) || x.Is(Faction.NeutralKilling)) && !x.Is(ModifierEnum.Lover)).ToList();
+            var toChooseFromNeut = PlayerControl.AllPlayerControls.ToArray().Where(x => (x.Is(Faction.NeutralBenign) || x.Is(Faction.NeutralEvil) || x.Is(Faction.NeutralKilling)) && !x.Is(ModifierEnum.Lover) && !x.Is(RoleEnum.Vampire)).ToList();
             if (PhantomOn && toChooseFromNeut.Count != 0)
             {
                 var rand = Random.RandomRangeInt(0, toChooseFromNeut.Count);
@@ -712,8 +712,11 @@ namespace TownOfUs
                         KillButtonTarget.DontRevive = byte.MaxValue;
                         ReviveHudManagerUpdate.DontRevive = byte.MaxValue;
                         AddHauntPatch.AssassinatedPlayers.Clear();
-                        HudUpdate.Zooming = false;
-                        HudUpdate.ZoomStart();
+                        Utils.UpdateVentPosition();
+                        Utils.toggleZoom(reset : true);
+                        Utils.previousEndGameSummary = "";
+                        CustomOption.Patches.HudManagerUpdate.CloseSettings();
+                        CustomOption.Patches.HudManagerUpdate.CloseSummary();
                         break;
 
                     case CustomRPC.JanitorClean:
@@ -1271,8 +1274,11 @@ namespace TownOfUs
                 Murder.KilledPlayers.Clear();
                 KillButtonTarget.DontRevive = byte.MaxValue;
                 ReviveHudManagerUpdate.DontRevive = byte.MaxValue;
-                HudUpdate.Zooming = false;
-                HudUpdate.ZoomStart();
+                Utils.UpdateVentPosition();
+                Utils.toggleZoom(reset : true);
+                Utils.previousEndGameSummary = "";
+                CustomOption.Patches.HudManagerUpdate.CloseSettings();
+                CustomOption.Patches.HudManagerUpdate.CloseSummary();
 
                 if (ShowRoundOneShield.FirstRoundShielded != null)
                 {
