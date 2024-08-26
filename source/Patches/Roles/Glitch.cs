@@ -286,6 +286,12 @@ namespace TownOfUs.Roles
                 {
                     if (PlayerControl.LocalPlayer == hackPlayer)
                     {
+                        if (PlayerControl.LocalPlayer.inVent)
+                        {
+                            PlayerControl.LocalPlayer.MyPhysics.RpcExitVent(Vent.currentVent.Id);
+                            PlayerControl.LocalPlayer.MyPhysics.ExitAllVents();
+                        }
+
                         if (HudManager.Instance.KillButton != null)
                         {
                             if (lockImg[0] == null)
@@ -454,7 +460,7 @@ namespace TownOfUs.Roles
                         $"{__instance.ColorString}Mimicking {mimicPlayer.Data.PlayerName} ({CustomGameOptions.MimicDuration - Math.Round(totalMimickTime)}s)</color>";
                     if (totalMimickTime > CustomGameOptions.MimicDuration ||
                         PlayerControl.LocalPlayer.Data.IsDead ||
-                        AmongUsClient.Instance.GameState == InnerNetClient.GameStates.Ended)
+                        AmongUsClient.Instance.GameState == InnerNetClient.GameStates.Ended || Utils.HasTask(TaskTypes.MushroomMixupSabotage))
                     {
                         PlayerControl.LocalPlayer.myTasks.Remove(mimicText);
                         //System.Console.WriteLine("Unsetting mimic");
@@ -485,7 +491,7 @@ namespace TownOfUs.Roles
 
                 __instance.KillButton.gameObject.SetActive((__instance.UseButton.isActiveAndEnabled || __instance.PetButton.isActiveAndEnabled)
                     && !MeetingHud.Instance && !__gInstance.Player.Data.IsDead
-                    && AmongUsClient.Instance.GameState == InnerNetClient.GameStates.Started);
+                    && AmongUsClient.Instance.GameState == InnerNetClient.GameStates.Started && !Utils.HasTask(TaskTypes.MushroomMixupSabotage));
                 __instance.KillButton.SetCoolDown(
                     CustomGameOptions.GlitchKillCooldown -
                     (float)(DateTime.UtcNow - __gInstance.LastKill).TotalSeconds,
@@ -496,7 +502,7 @@ namespace TownOfUs.Roles
 
                 if (__instance.KillButton.isActiveAndEnabled)
                 {
-                    __instance.KillButton.SetTarget(__gInstance.ClosestPlayer);
+                    Utils.SetTarget(ref __gInstance.ClosestPlayer, __instance.KillButton, allowVented: true);
                     __gInstance.KillTarget = __gInstance.ClosestPlayer;
                 }
 
@@ -570,7 +576,8 @@ namespace TownOfUs.Roles
                     Utils.SetTarget(
                         ref closestPlayer,
                         __gInstance.HackButton,
-                        GameOptionsData.KillDistances[CustomGameOptions.GlitchHackDistance]
+                        GameOptionsData.KillDistances[CustomGameOptions.GlitchHackDistance],
+                        allowVented: true
                     );
                     __gInstance.HackTarget = closestPlayer;
                 }
@@ -596,6 +603,12 @@ namespace TownOfUs.Roles
                     if (interact[0])
                     {
                         __gInstance.LastHack = DateTime.UtcNow;
+                        return;
+                    }
+                    else if (interact[5])
+                    {
+                        __gInstance.LastKill = DateTime.UtcNow;
+                        __gInstance.LastKill = __gInstance.LastKill.AddSeconds(CustomGameOptions.ProtectAbsorbCd - CustomGameOptions.GlitchKillCooldown);
                         return;
                     }
                     else if (interact[1])

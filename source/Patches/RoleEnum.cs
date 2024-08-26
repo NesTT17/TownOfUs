@@ -41,6 +41,11 @@ namespace TownOfUs
         Oracle,
         Aurial,
         Hunter,
+        Lawyer,
+        Mercenary,
+        Politician,
+        Immortal,
+        Scavenger,
 
         Miner,
         Swooper,
@@ -54,6 +59,7 @@ namespace TownOfUs
         Bomber,
         Warlock,
         Venerer,
+        Poisoner,
 
         Crewmate,
         Impostor,
@@ -85,7 +91,9 @@ namespace TownOfUs
         Multitasker,
         DoubleShot,
         Underdog,
-        Frosty
+        Frosty,
+        Drunk,
+        Blind,
     }
 
     public enum AbilityEnum

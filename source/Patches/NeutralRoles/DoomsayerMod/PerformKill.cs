@@ -38,6 +38,12 @@ namespace TownOfUs.NeutralRoles.DoomsayerMod
                 role.LastObserved = role.LastObserved.AddSeconds(CustomGameOptions.ProtectKCReset - CustomGameOptions.ObserveCooldown);
                 return false;
             }
+            else if (interact[5] == true)
+            {
+                role.LastObserved = DateTime.UtcNow;
+                role.LastObserved = role.LastObserved.AddSeconds(CustomGameOptions.ProtectAbsorbCd - CustomGameOptions.ObserveCooldown);
+                return false;
+            }
             else if (interact[3] == true) return false;
             return false;
         }

@@ -6,7 +6,7 @@ namespace TownOfUs.Roles.Modifiers
         {
             Name = "Bait";
             TaskText = () => "Killing you causes an instant self-report";
-            Color = Patches.Colors.Bait;
+            Color = Patches.Colors.CrewModifier;
             ModifierType = ModifierEnum.Bait;
         }
     }

@@ -83,6 +83,21 @@ namespace TownOfUs
                 var ww = (Werewolf)role;
                 losers.Add(ww.Player.GetDefaultOutfit().ColorId);
             }
+            foreach (var role in Role.GetRoles(RoleEnum.Lawyer))
+            {
+                var lwyr = (Lawyer)role;
+                losers.Add(lwyr.Player.GetDefaultOutfit().ColorId);
+            }
+            foreach (var role in Role.GetRoles(RoleEnum.Mercenary))
+            {
+                var merc = (Mercenary)role;
+                losers.Add(merc.Player.GetDefaultOutfit().ColorId);
+            }
+            foreach (var role in Role.GetRoles(RoleEnum.Scavenger))
+            {
+                var scav = (Scavenger)role;
+                losers.Add(scav.Player.GetDefaultOutfit().ColorId);
+            }
 
             var toRemoveWinners = TempData.winners.ToArray().Where(o => losers.Contains(o.ColorId)).ToArray();
             for (int i = 0; i < toRemoveWinners.Count(); i++) TempData.winners.Remove(toRemoveWinners[i]);
@@ -103,6 +118,32 @@ namespace TownOfUs
                         var survData = new WinningPlayerData(surv.Player.Data);
                         if (PlayerControl.LocalPlayer != surv.Player) survData.IsYou = false;
                         TempData.winners.Add(new WinningPlayerData(surv.Player.Data));
+                    }
+                }
+                foreach (var role in Role.GetRoles(RoleEnum.Mercenary))
+                {
+                    var merc = (Mercenary)role;
+                    if (!merc.Player.Data.IsDead && !merc.Player.Data.Disconnected && merc.HasEnoughBrilders)
+                    {
+                        var mercData = new WinningPlayerData(merc.Player.Data);
+                        if (PlayerControl.LocalPlayer != merc.Player) mercData.IsYou = false;
+                        TempData.winners.Add(new WinningPlayerData(merc.Player.Data));
+                    }
+                }
+
+                return;
+            }
+            if (Role.MercOnlyWins)
+            {
+                TempData.winners = new List<WinningPlayerData>();
+                foreach (var role in Role.GetRoles(RoleEnum.Mercenary))
+                {
+                    var merc = (Mercenary)role;
+                    if (!merc.Player.Data.IsDead && !merc.Player.Data.Disconnected && merc.HasEnoughBrilders)
+                    {
+                        var mercData = new WinningPlayerData(merc.Player.Data);
+                        if (PlayerControl.LocalPlayer != merc.Player) mercData.IsYou = false;
+                        TempData.winners.Add(new WinningPlayerData(merc.Player.Data));
                     }
                 }
 
@@ -171,6 +212,27 @@ namespace TownOfUs
                             {
                                 var lover = (Lover)modifier;
                                 if (doom.Player == lover.Player) {
+                                    var loverData = new WinningPlayerData(lover.OtherLover.Player.Data);
+                                    if (PlayerControl.LocalPlayer != lover.OtherLover.Player) loverData.IsYou = false;
+                                    TempData.winners.Add(loverData);
+                                }
+                            }
+                            return;
+                        }
+                    }
+                    else if (type == RoleEnum.Scavenger)
+                    {
+                        var scav = (Scavenger)role;
+                        if (scav.WonByDevouring)
+                        {
+                            TempData.winners = new List<WinningPlayerData>();
+                            var scavData = new WinningPlayerData(scav.Player.Data);
+                            if (PlayerControl.LocalPlayer != scav.Player) scavData.IsYou = false;
+                            TempData.winners.Add(scavData);
+                            foreach (var modifier in Modifier.GetModifiers(ModifierEnum.Lover))
+                            {
+                                var lover = (Lover)modifier;
+                                if (scav.Player == lover.Player) {
                                     var loverData = new WinningPlayerData(lover.OtherLover.Player.Data);
                                     if (PlayerControl.LocalPlayer != lover.OtherLover.Player) loverData.IsYou = false;
                                     TempData.winners.Add(loverData);
@@ -335,6 +397,30 @@ namespace TownOfUs
                         if (PlayerControl.LocalPlayer != ga.Player) gaWinData.IsYou = false;
                         TempData.winners.Add(gaWinData);
                     }
+                }
+            }
+            foreach (var role in Role.GetRoles(RoleEnum.Lawyer))
+            {
+                var lwyr = (Lawyer)role;
+                if (!lwyr.TargetVotedOut && !lwyr.Player.Data.IsDead)
+                {
+                    var isImp = TempData.winners[0].IsImpostor;
+                    var lwyrWinData = new WinningPlayerData(lwyr.Player.Data);
+                    if (isImp) lwyrWinData.IsImpostor = true;
+                    if (PlayerControl.LocalPlayer != lwyr.Player) lwyrWinData.IsYou = false;
+                    TempData.winners.Add(lwyrWinData);
+                }
+            }
+            foreach (var role in Role.GetRoles(RoleEnum.Mercenary))
+            {
+                var merc = (Mercenary)role;
+                if (!merc.Player.Data.IsDead && !merc.Player.Data.Disconnected && merc.HasEnoughBrilders)
+                {
+                    var isImp = TempData.winners[0].IsImpostor;
+                    var mercWinData = new WinningPlayerData(merc.Player.Data);
+                    if (isImp) mercWinData.IsImpostor = true;
+                    if (PlayerControl.LocalPlayer != merc.Player) mercWinData.IsYou = false;
+                    TempData.winners.Add(mercWinData);
                 }
             }
         }

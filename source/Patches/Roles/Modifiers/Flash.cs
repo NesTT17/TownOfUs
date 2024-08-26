@@ -9,7 +9,7 @@ namespace TownOfUs.Roles.Modifiers
         {
             Name = "Flash";
             TaskText = () => "Superspeed!";
-            Color = Patches.Colors.Flash;
+            Color = Patches.Colors.GlobalModifier;
             ModifierType = ModifierEnum.Flash;
         }
 

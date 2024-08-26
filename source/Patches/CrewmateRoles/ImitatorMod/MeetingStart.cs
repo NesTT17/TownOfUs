@@ -3,6 +3,9 @@ using TownOfUs.Roles;
 using System;
 using System.Linq;
 using TownOfUs.CrewmateRoles.OracleMod;
+using TownOfUs.CrewmateRoles.DetectiveMod;
+using System.Collections.Generic;
+using UnityEngine;
 
 namespace TownOfUs.CrewmateRoles.ImitatorMod
 {
@@ -11,10 +14,66 @@ namespace TownOfUs.CrewmateRoles.ImitatorMod
     {
         public static void Postfix(MeetingHud __instance)
         {
+            if (!PlayerControl.LocalPlayer.Is(RoleEnum.Imitator))
+            {
+                // RPC how many uses your ability had left so the Imitator's role knows the accurate count
+                List<RoleEnum> LimitedUsesRoles = new List<RoleEnum>()
+                {
+                    RoleEnum.Engineer,
+                    RoleEnum.Veteran,
+                    RoleEnum.VampireHunter,
+                    RoleEnum.Transporter,
+                    RoleEnum.Trapper
+                };
+                RoleEnum playerRole = Role.GetRole(PlayerControl.LocalPlayer).RoleType;
+                if (PlayerControl.LocalPlayer.Data.IsDead && LimitedUsesRoles.Contains(playerRole) && !StartImitate.UpdatedUses)
+                {
+                    int newUses = 0;
+                    if (playerRole == RoleEnum.Engineer)
+                    {
+                        newUses = ((Engineer)Role.GetRole(PlayerControl.LocalPlayer)).UsesLeft;
+                    }
+                    else if (playerRole == RoleEnum.Veteran)
+                    {
+                        newUses = ((Veteran)Role.GetRole(PlayerControl.LocalPlayer)).UsesLeft;
+                    }
+                    else if (playerRole == RoleEnum.VampireHunter)
+                    {
+                        newUses = ((VampireHunter)Role.GetRole(PlayerControl.LocalPlayer)).UsesLeft;
+                    }
+                    else if (playerRole == RoleEnum.Transporter)
+                    {
+                        newUses = ((Transporter)Role.GetRole(PlayerControl.LocalPlayer)).UsesLeft;
+                    }
+                    else if (playerRole == RoleEnum.Trapper)
+                    {
+                        newUses = ((Trapper)Role.GetRole(PlayerControl.LocalPlayer)).UsesLeft;
+                    }
+                    foreach(var role in Role.GetRoles(RoleEnum.Imitator))
+                    {
+                        // Only needed once per game
+                        StartImitate.UpdatedUses = true;
+                    }
+                    Utils.Rpc(CustomRPC.UpdateImitator, PlayerControl.LocalPlayer.PlayerId, newUses);
+                }
+                return;
+            }
             if (PlayerControl.LocalPlayer.Data.IsDead) return;
-            if (!PlayerControl.LocalPlayer.Is(RoleEnum.Imitator)) return;
             var imitatorRole = Role.GetRole<Imitator>(PlayerControl.LocalPlayer);
-            if (imitatorRole.trappedPlayers != null)
+            if (imitatorRole.LastExaminedPlayer != null)
+            {
+                if (CustomGameOptions.ExamineReportOn)
+                {
+                    var playerResults = BodyReport.PlayerReportFeedback(imitatorRole.LastExaminedPlayer);
+                    var roleResults = BodyReport.RoleReportFeedback(imitatorRole.LastExaminedPlayer);
+
+                    if (!string.IsNullOrWhiteSpace(playerResults)) DestroyableSingleton<HudManager>.Instance.Chat.AddChat(PlayerControl.LocalPlayer, playerResults);
+                    if (!string.IsNullOrWhiteSpace(roleResults)) DestroyableSingleton<HudManager>.Instance.Chat.AddChat(PlayerControl.LocalPlayer, roleResults);
+                }
+
+                imitatorRole.LastExaminedPlayer = null;
+            }
+            else if (imitatorRole.trappedPlayers != null)
             {
                 if (imitatorRole.trappedPlayers.Count == 0)
                 {

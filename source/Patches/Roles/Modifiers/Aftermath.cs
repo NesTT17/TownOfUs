@@ -15,7 +15,7 @@ namespace TownOfUs.Roles.Modifiers
         {
             Name = "Aftermath";
             TaskText = () => "Force your killer to use their ability";
-            Color = Patches.Colors.Aftermath;
+            Color = Patches.Colors.CrewModifier;
             ModifierType = ModifierEnum.Aftermath;
         }
 

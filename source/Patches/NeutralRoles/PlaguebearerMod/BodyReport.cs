@@ -21,6 +21,10 @@ namespace TownOfUs.NeutralRoles.PlaguebearerMod
                     {
                         foreach (var pb in Role.GetRoles(RoleEnum.Plaguebearer)) ((Plaguebearer)pb).RpcSpreadInfection(PlayerControl.LocalPlayer, player);
                     }
+                    if (PlayerControl.LocalPlayer.IsCampaigned() || player.IsCampaigned())
+                    {
+                        foreach (var pn in Role.GetRoles(RoleEnum.Politician)) ((Politician)pn).RpcSpreadCampaign(PlayerControl.LocalPlayer, player);
+                    }
                 }
             }
         }

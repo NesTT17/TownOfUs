@@ -143,12 +143,6 @@ namespace TownOfUs.NeutralRoles.DoomsayerMod
                     var doom = Role.GetRole<Doomsayer>(PlayerControl.LocalPlayer);
                     ShowHideButtonsDoom.HideButtonsDoom(doom);
                 }
-
-                if (player.Is(RoleEnum.Mayor))
-                {
-                    var mayor = Role.GetRole<Mayor>(PlayerControl.LocalPlayer);
-                    mayor.RevealButton.Destroy();
-                }
             }
             player.Die(DeathReason.Kill, false);
             if (checkLover && player.IsLover() && CustomGameOptions.BothLoversDie)
@@ -156,6 +150,11 @@ namespace TownOfUs.NeutralRoles.DoomsayerMod
                 var otherLover = Modifier.GetModifier<Lover>(player).OtherLover.Player;
                 if (!otherLover.Is(RoleEnum.Pestilence)) MurderPlayer(otherLover, false, false);
             }
+
+            var role2 = Role.GetRole(player);
+            var doomsayerPlayer = Role.GetRole<Doomsayer>(player);
+            role2.DeathReason = DeathReasonEnum.Guessed;
+            role2.KilledBy = " By " + Utils.ColorString(Colors.Doomsayer, doomsayerPlayer.PlayerName);
 
             var deadPlayer = new DeadPlayer
             {

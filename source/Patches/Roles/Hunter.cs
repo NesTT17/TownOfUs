@@ -88,7 +88,7 @@ namespace TownOfUs.Roles
         {
             if (PlayerControl.LocalPlayer.PlayerId == Player.PlayerId)
             {
-                Coroutines.Start(Utils.FlashCoroutine(Patches.Colors.Hunter));
+                Utils.ShowAnimatedFlash(Patches.Colors.Hunter);
             }
             CaughtPlayers.Add(stalked);
             StalkDuration = 0;

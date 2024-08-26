@@ -34,6 +34,8 @@ namespace TownOfUs.NeutralRoles.PhantomMod
             if (exeRole != null) return;
             var jestRole = Role.AllRoles.FirstOrDefault(x => x.RoleType == RoleEnum.Jester && ((Jester)x).VotedOut && ((Jester)x).Player == WillBePhantom);
             if (jestRole != null) return;
+            var scavRole = Role.AllRoles.FirstOrDefault(x => x.RoleType == RoleEnum.Scavenger && ((Scavenger)x).WonByDevouring && ((Scavenger)x).Player == WillBePhantom);
+            if (scavRole != null) return;
             if (WillBePhantom.Data.Disconnected) return;
             if (!WillBePhantom.Data.IsDead && WillBePhantom != exiled) return;
 

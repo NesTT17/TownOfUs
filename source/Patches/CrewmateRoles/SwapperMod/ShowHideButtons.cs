@@ -7,6 +7,7 @@ using TownOfUs.Roles;
 using Il2CppInterop.Runtime.InteropTypes.Arrays;
 using UnityEngine;
 using UnityEngine.UI;
+using Hazel;
 
 namespace TownOfUs.CrewmateRoles.SwapperMod
 {
@@ -151,6 +152,7 @@ namespace TownOfUs.CrewmateRoles.SwapperMod
                     }
 
                     __instance.RpcVotingComplete(array, exiled, tie);
+
                 }
 
                 return false;

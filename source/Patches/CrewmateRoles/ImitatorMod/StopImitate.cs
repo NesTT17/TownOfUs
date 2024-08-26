@@ -21,8 +21,11 @@ namespace TownOfUs.CrewmateRoles.ImitatorMod
             }
             if (StartImitate.ImitatingPlayer != null && !StartImitate.ImitatingPlayer.Is(RoleEnum.Traitor))
             {
+                PlayerControl lastExaminedPlayer = null;
                 List<RoleEnum> trappedPlayers = null;
                 PlayerControl confessingPlayer = null;
+                Dictionary<string, int> LimitedRoleUses = StartImitate.LimitedRoleUses;
+                bool isImmortal = PlayerControl.LocalPlayer.Is(RoleEnum.Immortal);
 
                 if (PlayerControl.LocalPlayer == StartImitate.ImitatingPlayer)
                 {
@@ -31,6 +34,7 @@ namespace TownOfUs.CrewmateRoles.ImitatorMod
                     if (PlayerControl.LocalPlayer.Is(RoleEnum.Engineer))
                     {
                         var engineerRole = Role.GetRole<Engineer>(PlayerControl.LocalPlayer);
+                        LimitedRoleUses["Engineer"] = engineerRole.UsesLeft;
                         Object.Destroy(engineerRole.UsesText);
                     }
 
@@ -45,6 +49,7 @@ namespace TownOfUs.CrewmateRoles.ImitatorMod
                     if (PlayerControl.LocalPlayer.Is(RoleEnum.VampireHunter))
                     {
                         var vhRole = Role.GetRole<VampireHunter>(PlayerControl.LocalPlayer);
+                        LimitedRoleUses["VampireHunter"] = vhRole.UsesLeft;
                         Object.Destroy(vhRole.UsesText);
                     }
 
@@ -58,6 +63,7 @@ namespace TownOfUs.CrewmateRoles.ImitatorMod
                     if (PlayerControl.LocalPlayer.Is(RoleEnum.Transporter))
                     {
                         var transporterRole = Role.GetRole<Transporter>(PlayerControl.LocalPlayer);
+                        LimitedRoleUses["Transporter"] = transporterRole.UsesLeft;
                         Object.Destroy(transporterRole.UsesText);
                         if (transporterRole.TransportList != null)
                         {
@@ -72,12 +78,14 @@ namespace TownOfUs.CrewmateRoles.ImitatorMod
                     if (PlayerControl.LocalPlayer.Is(RoleEnum.Veteran))
                     {
                         var veteranRole = Role.GetRole<Veteran>(PlayerControl.LocalPlayer);
+                        LimitedRoleUses["Veteran"] = veteranRole.UsesLeft;
                         Object.Destroy(veteranRole.UsesText);
                     }
 
                     if (PlayerControl.LocalPlayer.Is(RoleEnum.Trapper))
                     {
                         var trapperRole = Role.GetRole<Trapper>(PlayerControl.LocalPlayer);
+                        LimitedRoleUses["Trapper"] = trapperRole.UsesLeft;
                         Object.Destroy(trapperRole.UsesText);
                         trapperRole.traps.ClearTraps();
                         trappedPlayers = trapperRole.trappedPlayers;
@@ -92,8 +100,7 @@ namespace TownOfUs.CrewmateRoles.ImitatorMod
                     if (PlayerControl.LocalPlayer.Is(RoleEnum.Detective))
                     {
                         var detecRole = Role.GetRole<Detective>(PlayerControl.LocalPlayer);
-                        detecRole.ClosestPlayer = null;
-                        detecRole.ExamineButton.gameObject.SetActive(false);
+                        lastExaminedPlayer = detecRole.LastExaminedPlayer;
                     }
 
                     if (PlayerControl.LocalPlayer.Is(RoleEnum.Aurial))
@@ -121,6 +128,7 @@ namespace TownOfUs.CrewmateRoles.ImitatorMod
                 var imitator = new Imitator(StartImitate.ImitatingPlayer);
                 imitator.trappedPlayers = trappedPlayers;
                 imitator.confessingPlayer = confessingPlayer;
+                imitator.LimitedRoleUses = LimitedRoleUses;
                 var newRole = Role.GetRole(StartImitate.ImitatingPlayer);
                 newRole.RemoveFromRoleHistory(newRole.RoleType);
                 newRole.Kills = killsList.Kills;
@@ -128,6 +136,7 @@ namespace TownOfUs.CrewmateRoles.ImitatorMod
                 newRole.IncorrectKills = killsList.IncorrectKills;
                 newRole.CorrectAssassinKills = killsList.CorrectAssassinKills;
                 newRole.IncorrectAssassinKills = killsList.IncorrectAssassinKills;
+                if (isImmortal && StartImitate.ImitatingPlayer.AmOwner) Utils.UnCamouflage();
                 Role.GetRole<Imitator>(StartImitate.ImitatingPlayer).ImitatePlayer = null;
                 StartImitate.ImitatingPlayer = null;
             }

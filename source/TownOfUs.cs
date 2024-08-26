@@ -30,8 +30,8 @@ namespace TownOfUs
     [ReactorModFlags(Reactor.Networking.ModFlags.RequireOnAllClients)]
     public class TownOfUs : BasePlugin
     {
-        public const string Id = "com.slushiegoose.townofus";
-        public const string VersionString = "5.0.4.2";
+        public const string Id = "com.nestt.townofus";
+        public const string VersionString = "5.0.4.3";
         public static System.Version Version = System.Version.Parse(VersionString);
 
         public static AssetLoader bundledAssets;
@@ -99,6 +99,13 @@ namespace TownOfUs
         public static Sprite MimicSprite;
         public static Sprite LockSprite;
         public static Sprite StalkSprite;
+        public static Sprite PoisonSprite;
+        public static Sprite PoisonedSprite;
+        public static Sprite MercProtectSprite;
+        public static Sprite DonArmorSprite;
+        public static Sprite CampaignSprite;
+        public static Sprite BodyguardSprite;
+        public static Sprite DevourSprite;
 
         public static Sprite SettingsButtonSprite;
         public static Sprite CrewSettingsButtonSprite;
@@ -195,6 +202,13 @@ namespace TownOfUs
             MimicSprite = CreateSprite("TownOfUs.Resources.Mimic.png");
             LockSprite = CreateSprite("TownOfUs.Resources.Lock.png");
             StalkSprite = CreateSprite("TownOfUs.Resources.Stalk.png");
+            PoisonSprite = CreateSprite("TownOfUs.Resources.Poison.png");
+            PoisonedSprite = CreateSprite("TownOfUs.Resources.Poisoned.png");
+            MercProtectSprite = CreateSprite("TownOfUs.Resources.MercProtect.png");
+            DonArmorSprite = CreateSprite("TownOfUs.Resources.DonArmor.png");
+            CampaignSprite = CreateSprite("TownOfUs.Resources.Campaign.png");
+            BodyguardSprite = CreateSprite("TownOfUs.Resources.Bodyguard.png");
+            DevourSprite = CreateSprite("TownOfUs.Resources.Devour.png");
 
             SettingsButtonSprite = CreateSprite("TownOfUs.Resources.SettingsButton.png");
             CrewSettingsButtonSprite = CreateSprite("TownOfUs.Resources.Crewmate.png");

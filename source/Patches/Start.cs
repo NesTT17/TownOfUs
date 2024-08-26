@@ -3,11 +3,13 @@ using HarmonyLib;
 using Hazel;
 using TownOfUs.NeutralRoles.ExecutionerMod;
 using TownOfUs.NeutralRoles.GuardianAngelMod;
+using TownOfUs.Modifiers.UnderdogMod;
 using TownOfUs.Roles;
 using TownOfUs.Roles.Cultist;
 using TownOfUs.Roles.Modifiers;
 using UnityEngine;
 using Object = UnityEngine.Object;
+using TownOfUs.NeutralRoles.LawyerMod;
 
 namespace TownOfUs.Patches
 {
@@ -22,6 +24,7 @@ namespace TownOfUs.Patches
                 var detective = Role.GetRole<Detective>(PlayerControl.LocalPlayer);
                 detective.LastExamined = DateTime.UtcNow;
                 detective.LastExamined = detective.LastExamined.AddSeconds(CustomGameOptions.InitialCooldowns - CustomGameOptions.ExamineCd);
+                detective.LastExaminedPlayer = null;
             }
 
             if (PlayerControl.LocalPlayer.Is(RoleEnum.Medium))
@@ -198,6 +201,17 @@ namespace TownOfUs.Patches
                 undertaker.LastDragged = undertaker.LastDragged.AddSeconds(CustomGameOptions.InitialCooldowns - CustomGameOptions.DragCd);
             }
 
+            if (PlayerControl.LocalPlayer.Is(RoleEnum.Poisoner))
+            {
+                var poisoner = Role.GetRole<Poisoner>(PlayerControl.LocalPlayer);
+                poisoner.LastPoisoned = DateTime.UtcNow;
+                if (poisoner.Player.Is(ModifierEnum.Underdog))
+                {
+                    poisoner.LastPoisoned = poisoner.LastPoisoned.AddSeconds(PerformKill.LastImp() ? CustomGameOptions.UnderdogKillBonus : (PerformKill.IncreasedKC() ? 0f : (-CustomGameOptions.UnderdogKillBonus)));
+                }
+                poisoner.LastPoisoned = poisoner.LastPoisoned.AddSeconds(CustomGameOptions.InitialCooldowns - CustomGameOptions.PoisonCd);
+            }
+
             if (PlayerControl.LocalPlayer.Is(RoleEnum.Arsonist))
             {
                 var arsonist = Role.GetRole<Arsonist>(PlayerControl.LocalPlayer);
@@ -290,6 +304,38 @@ namespace TownOfUs.Patches
                 vamp.LastBit = vamp.LastBit.AddSeconds(CustomGameOptions.InitialCooldowns - CustomGameOptions.BiteCd);
             }
 
+            if (PlayerControl.LocalPlayer.Is(RoleEnum.Lawyer))
+            {
+                var lwyr = Role.GetRole<Lawyer>(PlayerControl.LocalPlayer);
+                if (lwyr.target == null)
+                {
+                    var writer = AmongUsClient.Instance.StartRpcImmediately(PlayerControl.LocalPlayer.NetId,
+                        (byte)CustomRPC.LawyerToJester, SendOption.Reliable, -1);
+                    writer.Write(lwyr.Player.PlayerId);
+                    AmongUsClient.Instance.FinishRpcImmediately(writer);
+                    LawyerTargetColor.LwyrToJes(lwyr.Player);
+                }
+            }
+
+            if (PlayerControl.LocalPlayer.Is(RoleEnum.Politician))
+            {
+                var politician = Role.GetRole<Politician>(PlayerControl.LocalPlayer);
+                politician.LastCampaigned = DateTime.UtcNow;
+                politician.LastCampaigned = politician.LastCampaigned.AddSeconds(CustomGameOptions.InitialCooldowns - CustomGameOptions.CampaignCd);
+            }
+
+            if (PlayerControl.LocalPlayer.Is(RoleEnum.Immortal))
+            {
+                Utils.Camouflage();
+            }
+
+            if (PlayerControl.LocalPlayer.Is(RoleEnum.Scavenger))
+            {
+                var scavenger = Role.GetRole<Scavenger>(PlayerControl.LocalPlayer);
+                scavenger.LastDevoured = DateTime.UtcNow;
+                scavenger.LastDevoured = scavenger.LastDevoured.AddSeconds(CustomGameOptions.InitialCooldowns - CustomGameOptions.DevourCd);
+            }
+
             if (PlayerControl.LocalPlayer.Is(ModifierEnum.Radar))
             {
                 var radar = Modifier.GetModifier<Radar>(PlayerControl.LocalPlayer);
@@ -298,7 +344,7 @@ namespace TownOfUs.Patches
                 gameObj.transform.parent = PlayerControl.LocalPlayer.gameObject.transform;
                 var renderer = gameObj.AddComponent<SpriteRenderer>();
                 renderer.sprite = Sprite;
-                renderer.color = Colors.Radar;
+                renderer.color = Colors.GlobalModifier;
                 arrow.image = renderer;
                 gameObj.layer = 5;
                 arrow.target = PlayerControl.LocalPlayer.transform.position;

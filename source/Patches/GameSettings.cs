@@ -8,6 +8,7 @@ using AmongUs.GameOptions;
 using System.Linq;
 using UnityEngine;
 using System;
+using TownOfUs.Roles;
 
 namespace TownOfUs
 {
@@ -23,9 +24,9 @@ namespace TownOfUs
                 if (option.Type == CustomOptionType.Button)
                     continue;
                 
-                if (option.Type == CustomOptionType.Header)
+                if (option.Type == CustomOptionType.Header && option.ShouldShow())
                     sb.AppendLine($"\n{option.Name}");
-                else
+                else if (option.ShouldShow())
                     sb.AppendLine($"    {option.Name}: {option}");
             }
 
@@ -40,13 +41,8 @@ namespace TownOfUs
             
             string hudString = SettingsPage != -1 && !hideExtras ? (DateTime.Now.Second % 2 == 0 ? $"<color=#{Color.white.ToHtmlStringRGBA()}>(Use scroll wheel if necessary)</color>\n\n" : $"<color=#{Color.red.ToHtmlStringRGBA()}>(Use scroll wheel if necessary)</color>\n\n") : "";
 
-            if (SettingsPage == -1) {
-                var num = RoleManager.Instance.AllRoles.Count(x => x.Role != RoleTypes.Crewmate && x.Role != RoleTypes.Impostor && x.Role != RoleTypes.CrewmateGhost && x.Role != RoleTypes.ImpostorGhost);
-                for (int i = 0; i < num; i++) {
-                    vanillaSettings = vanillaSettings.Remove(vanillaSettings.LastIndexOf("\n"), 1).Remove(vanillaSettings.LastIndexOf(":"), 1);
-                }
+            if (SettingsPage == -1)
                 hudString += (!hideExtras ? "" : "Page 1: Vanilla Settings \n\n") + vanillaSettings;
-            }
             else if (SettingsPage == 0)
                 hudString += "Page 2: Town Of Us Settings" + buildOptionsOfType(MultiMenu.main);
             else if (SettingsPage == 1)
@@ -116,8 +112,24 @@ namespace TownOfUs
                 
             if (Input.GetKeyDown(KeyCode.F2))
                 CustomOption.Patches.HudManagerUpdate.ToggleSummary(HudManager.Instance);
+
+            bool dead = false;
+            if (Utils.ShowDeadBodies)
+            {
+                if (PlayerControl.LocalPlayer.Is(RoleEnum.Haunter))
+                {
+                    var haunter = Role.GetRole<Haunter>(PlayerControl.LocalPlayer);
+                    if (haunter.Caught) dead = true;
+                }
+                else if (PlayerControl.LocalPlayer.Is(RoleEnum.Phantom))
+                {
+                    var phantom = Role.GetRole<Phantom>(PlayerControl.LocalPlayer);
+                    if (phantom.Caught) dead = true;
+                }
+                else dead = true;
+            }
                 
-            if (Input.GetKeyDown(KeyCode.KeypadPlus))
+            if (Input.GetKeyDown(KeyCode.KeypadPlus) && !MeetingHud.Instance && !ExileController.Instance && dead && !LobbyBehaviour.Instance)
                 Utils.toggleZoom();
         }
     }

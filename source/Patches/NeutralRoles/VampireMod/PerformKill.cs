@@ -53,6 +53,12 @@ namespace TownOfUs.NeutralRoles.VampireMod
                     role.LastBit = DateTime.UtcNow;
                     return false;
                 }
+                else if (interact[5] == true)
+                {
+                    role.LastBit = DateTime.UtcNow;
+                    role.LastBit = role.LastBit.AddSeconds(CustomGameOptions.ProtectAbsorbCd - CustomGameOptions.BiteCd);
+                    return false;
+                }
                 else if (interact[1] == true)
                 {
                     role.LastBit = DateTime.UtcNow;
@@ -82,6 +88,12 @@ namespace TownOfUs.NeutralRoles.VampireMod
                 if (interact[0] == true)
                 {
                     role.LastBit = DateTime.UtcNow;
+                    return false;
+                }
+                else if (interact[5] == true)
+                {
+                    role.LastBit = System.DateTime.UtcNow;
+                    role.LastBit = role.LastBit.AddSeconds(CustomGameOptions.ProtectAbsorbCd - CustomGameOptions.BiteCd);
                     return false;
                 }
                 else if (interact[1] == true)
@@ -202,12 +214,6 @@ namespace TownOfUs.NeutralRoles.VampireMod
                     trapperRole.traps.ClearTraps();
                 }
 
-                if (PlayerControl.LocalPlayer.Is(RoleEnum.Detective))
-                {
-                    var detecRole = Role.GetRole<Detective>(PlayerControl.LocalPlayer);
-                    detecRole.ExamineButton.gameObject.SetActive(false);
-                }
-
                 if (PlayerControl.LocalPlayer.Is(RoleEnum.Aurial))
                 {
                     var aurialRole = Role.GetRole<Aurial>(PlayerControl.LocalPlayer);
@@ -226,6 +232,13 @@ namespace TownOfUs.NeutralRoles.VampireMod
                 {
                     var gaRole = Role.GetRole<GuardianAngel>(PlayerControl.LocalPlayer);
                     UnityEngine.Object.Destroy(gaRole.UsesText);
+                }
+
+                if (PlayerControl.LocalPlayer.Is(RoleEnum.Hunter))
+                {
+                    var hunterRole = Role.GetRole<Hunter>(PlayerControl.LocalPlayer);
+                    hunterRole.StalkButton.gameObject.SetActive(false);
+                    UnityEngine.Object.Destroy(hunterRole.UsesText);
                 }
             }
 
@@ -250,6 +263,11 @@ namespace TownOfUs.NeutralRoles.VampireMod
             }
 
             if (CustomGameOptions.NewVampCanAssassin) new Assassin(newVamp);
+
+            if (oldRole.RoleType == RoleEnum.Immortal)
+            {
+                Utils.UnCamouflage();
+            }
         }
     }
 }

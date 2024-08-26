@@ -13,7 +13,7 @@ namespace TownOfUs.Roles.Modifiers
         {
             Name = "Button Barry";
             TaskText = () => "Call a button from anywhere!";
-            Color = Patches.Colors.ButtonBarry;
+            Color = Patches.Colors.GlobalModifier;
             StartingCooldown = DateTime.UtcNow;
             ModifierType = ModifierEnum.ButtonBarry;
         }

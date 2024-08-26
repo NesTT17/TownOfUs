@@ -77,8 +77,6 @@ namespace TownOfUs.Roles.Modifiers
 
             lover1.OtherLover = lover2;
             lover2.OtherLover = lover1;
-
-            System.Console.WriteLine($"{firstLover.Data.DefaultOutfit.PlayerName} LOVERS {secondLover.Data.DefaultOutfit.PlayerName}");
         }
 
         internal override bool ModifierWin(LogicGameFlowNormal __instance)

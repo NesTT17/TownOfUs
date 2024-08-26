@@ -10,7 +10,7 @@ namespace TownOfUs.Roles.Modifiers
         {
             Name = "Radar";
             TaskText = () => "Be on high alert";
-            Color = Patches.Colors.Radar;
+            Color = Patches.Colors.GlobalModifier;
             ModifierType = ModifierEnum.Radar;
         }
     }

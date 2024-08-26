@@ -4,6 +4,7 @@ using TownOfUs.Roles;
 using UnityEngine;
 using Object = UnityEngine.Object;
 using TownOfUs.Patches;
+using System.Collections.Generic;
 
 namespace TownOfUs.CrewmateRoles.ImitatorMod
 {
@@ -17,6 +18,8 @@ namespace TownOfUs.CrewmateRoles.ImitatorMod
     public class StartImitate
     {
         public static PlayerControl ImitatingPlayer;
+        public static Dictionary<string, int> LimitedRoleUses;
+        public static bool UpdatedUses = false;
         public static void ExileControllerPostfix(ExileController __instance)
         {
             var exiled = __instance.exiled?.Object;
@@ -45,6 +48,7 @@ namespace TownOfUs.CrewmateRoles.ImitatorMod
         {
             if (imitator.ImitatePlayer == null) return;
             ImitatingPlayer = imitator.Player;
+            LimitedRoleUses = imitator.LimitedRoleUses;
             var imitatorRole = Role.GetRole(imitator.ImitatePlayer).RoleType;
             if (imitatorRole == RoleEnum.Haunter)
             {
@@ -55,19 +59,67 @@ namespace TownOfUs.CrewmateRoles.ImitatorMod
             var role = Role.GetRole(ImitatingPlayer);
             var killsList = (role.Kills, role.CorrectKills, role.IncorrectKills, role.CorrectAssassinKills, role.IncorrectAssassinKills);
             Role.RoleDictionary.Remove(ImitatingPlayer.PlayerId);
-            if (imitatorRole == RoleEnum.Detective) new Detective(ImitatingPlayer);
+            if (imitatorRole == RoleEnum.Detective)
+            {
+                var detective = new Detective(ImitatingPlayer);
+                detective.LastExamined = detective.LastExamined.AddSeconds(CustomGameOptions.InitialExamineCd - CustomGameOptions.ExamineCd);
+            }
             if (imitatorRole == RoleEnum.Investigator) new Investigator(ImitatingPlayer);
             if (imitatorRole == RoleEnum.Mystic) new Mystic(ImitatingPlayer);
             if (imitatorRole == RoleEnum.Seer) new Seer(ImitatingPlayer);
             if (imitatorRole == RoleEnum.Spy) new Spy(ImitatingPlayer);
             if (imitatorRole == RoleEnum.Tracker) new Tracker(ImitatingPlayer);
             if (imitatorRole == RoleEnum.Sheriff) new Sheriff(ImitatingPlayer);
-            if (imitatorRole == RoleEnum.Veteran) new Veteran(ImitatingPlayer);
+            if (imitatorRole == RoleEnum.Veteran)
+            {
+                var veteran = new Veteran(ImitatingPlayer);
+                if (LimitedRoleUses.ContainsKey("Veteran"))
+                {
+                    veteran.UsesLeft = LimitedRoleUses["Veteran"];
+                }
+                else
+                {
+                    veteran.UsesLeft = ((Veteran)Role.GetRole(imitator.ImitatePlayer)).UsesLeft;
+                }
+            }
             if (imitatorRole == RoleEnum.Altruist) new Altruist(ImitatingPlayer);
-            if (imitatorRole == RoleEnum.Engineer) new Engineer(ImitatingPlayer);
+            if (imitatorRole == RoleEnum.Engineer)
+            {
+                var engi = new Engineer(ImitatingPlayer);
+                if (LimitedRoleUses.ContainsKey("Engineer"))
+                {
+                    engi.UsesLeft = LimitedRoleUses["Engineer"];
+                }
+                else
+                {
+                    engi.UsesLeft = ((Engineer)Role.GetRole(imitator.ImitatePlayer)).UsesLeft;
+                }
+            }
             if (imitatorRole == RoleEnum.Medium) new Medium(ImitatingPlayer);
-            if (imitatorRole == RoleEnum.Transporter) new Transporter(ImitatingPlayer);
-            if (imitatorRole == RoleEnum.Trapper) new Trapper(ImitatingPlayer);
+            if (imitatorRole == RoleEnum.Transporter)
+            {
+                var trans = new Transporter(ImitatingPlayer);
+                if (LimitedRoleUses.ContainsKey("Transporter"))
+                {
+                    trans.UsesLeft = LimitedRoleUses["Transporter"];
+                }
+                else
+                {
+                    trans.UsesLeft = ((Transporter)Role.GetRole(imitator.ImitatePlayer)).UsesLeft;
+                }
+            }
+            if (imitatorRole == RoleEnum.Trapper)
+            {
+                var trapper = new Trapper(ImitatingPlayer);
+                if (LimitedRoleUses.ContainsKey("Trapper"))
+                {
+                    trapper.UsesLeft = LimitedRoleUses["Trapper"];
+                }
+                else
+                {
+                    trapper.UsesLeft = ((Trapper)Role.GetRole(imitator.ImitatePlayer)).UsesLeft;
+                }
+            }
             if (imitatorRole == RoleEnum.Oracle) new Oracle(ImitatingPlayer);
             if (imitatorRole == RoleEnum.Medic)
             {
@@ -78,7 +130,14 @@ namespace TownOfUs.CrewmateRoles.ImitatorMod
             if (imitatorRole == RoleEnum.VampireHunter)
             {
                 var vh = new VampireHunter(ImitatingPlayer);
-                vh.UsesLeft = CustomGameOptions.MaxFailedStakesPerGame;
+                if (LimitedRoleUses.ContainsKey("VampireHunter"))
+                {
+                    vh.UsesLeft = LimitedRoleUses["VampireHunter"];
+                }
+                else
+                {
+                    vh.UsesLeft = ((VampireHunter)Role.GetRole(imitator.ImitatePlayer)).UsesLeft;
+                }
                 vh.AddedStakes = true;
             }
             if (imitatorRole == RoleEnum.Aurial)
@@ -86,6 +145,11 @@ namespace TownOfUs.CrewmateRoles.ImitatorMod
                 var aurial = new Aurial(ImitatingPlayer);
                 aurial.CannotSeeDelay = DateTime.UtcNow;
                 aurial.Loaded = true;
+            }
+            if (imitatorRole == RoleEnum.Immortal)
+            {
+                new Immortal(ImitatingPlayer);
+                if(ImitatingPlayer.AmOwner) Utils.Camouflage();
             }
 
             var newRole = Role.GetRole(ImitatingPlayer);

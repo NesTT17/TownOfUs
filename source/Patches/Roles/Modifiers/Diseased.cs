@@ -6,7 +6,7 @@ namespace TownOfUs.Roles.Modifiers
         {
             Name = "Diseased";
             TaskText = () => "Killing you gives Impostors a high cooldown";
-            Color = Patches.Colors.Diseased;
+            Color = Patches.Colors.CrewModifier;
             ModifierType = ModifierEnum.Diseased;
         }
     }

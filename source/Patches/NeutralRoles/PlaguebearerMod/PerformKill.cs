@@ -29,6 +29,12 @@ namespace TownOfUs.NeutralRoles.PlaguebearerMod
                 role.LastInfected = DateTime.UtcNow;
                 return false;
             }
+            else if (interact[5] == true)
+            {
+                role.LastInfected = System.DateTime.UtcNow;
+                role.LastInfected = role.LastInfected.AddSeconds(CustomGameOptions.ProtectAbsorbCd - CustomGameOptions.InfectCd);
+                return false;
+            }
             else if (interact[1] == true)
             {
                 role.LastInfected = DateTime.UtcNow;

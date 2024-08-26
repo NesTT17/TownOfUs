@@ -6,7 +6,7 @@ namespace TownOfUs.Roles.Modifiers
         {
             Name = "Tiebreaker";
             TaskText = () => "Your vote breaks ties";
-            Color = Patches.Colors.Tiebreaker;
+            Color = Patches.Colors.GlobalModifier;
             ModifierType = ModifierEnum.Tiebreaker;
         }
     }

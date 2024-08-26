@@ -36,6 +36,12 @@ namespace TownOfUs.ImpostorRoles.BlackmailerMod
                     role.Blackmailed = target;
                     Utils.Rpc(CustomRPC.Blackmail, PlayerControl.LocalPlayer.PlayerId, target.PlayerId);
                 }
+                else if (interact[5])
+                {
+                    role.LastBlackmailed = System.DateTime.UtcNow;
+                    role.LastBlackmailed = role.LastBlackmailed.AddSeconds(CustomGameOptions.ProtectAbsorbCd - CustomGameOptions.BlackmailCd);
+                    return false;
+                }
                 role.BlackmailButton.SetCoolDown(0.01f, 1f);
                 return false;
             }

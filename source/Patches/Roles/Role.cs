@@ -23,6 +23,7 @@ namespace TownOfUs.Roles
 
         public static bool NobodyWins;
         public static bool SurvOnlyWins;
+        public static bool MercOnlyWins;
         public static bool VampireWins;
 
         public List<KillButton> ExtraButtons = new List<KillButton>();
@@ -57,6 +58,7 @@ namespace TownOfUs.Roles
 
         protected float Scale { get; set; } = 1f;
         protected internal Color Color { get; set; }
+        protected internal DeathReasonEnum DeathReason { get; set; } = DeathReasonEnum.Alive;
         protected internal RoleEnum RoleType { get; set; }
         protected internal int TasksLeft => Player.Data.Tasks.ToArray().Count(x => !x.Complete);
         protected internal int TotalTasks => Player.Data.Tasks.Count;
@@ -69,6 +71,7 @@ namespace TownOfUs.Roles
         public bool Local => PlayerControl.LocalPlayer.PlayerId == Player.PlayerId;
 
         protected internal bool Hidden { get; set; } = false;
+        protected internal string KilledBy { get; set; } = "";
 
         protected internal Faction Faction { get; set; } = Faction.Crewmates;
 
@@ -145,11 +148,6 @@ namespace TownOfUs.Roles
                 if (lover.OtherLover.Player != Player) return false;
                 if (!PlayerControl.LocalPlayer.Is(RoleEnum.Aurial)) return true;
                 if (MeetingHud.Instance || Utils.ShowDeadBodies) return true;
-                if (lover.OtherLover.Player.Is(RoleEnum.Mayor))
-                {
-                    var mayor = GetRole<Mayor>(lover.OtherLover.Player);
-                    if (mayor.Revealed) return true;
-                }
             }
             return false;
         }
@@ -180,23 +178,13 @@ namespace TownOfUs.Roles
         {
             SurvOnlyWins = true;
         }
+        public static void MercOnlyWin()
+        {
+            MercOnlyWins = true;
+        }
         public static void VampWin()
         {
-            foreach (var jest in GetRoles(RoleEnum.Jester))
-            {
-                var jestRole = (Jester)jest;
-                if (jestRole.VotedOut) return;
-            }
-            foreach (var exe in GetRoles(RoleEnum.Executioner))
-            {
-                var exeRole = (Executioner)exe;
-                if (exeRole.TargetVotedOut) return;
-            }
-            foreach (var doom in GetRoles(RoleEnum.Doomsayer))
-            {
-                var doomRole = (Doomsayer)doom;
-                if (doomRole.WonByGuessing) return;
-            }
+            if (Utils.NeutralWonGame()) return;
 
             VampireWins = true;
 
@@ -235,6 +223,19 @@ namespace TownOfUs.Roles
                 return flag;
             }
 
+            bool MercOnly()
+            {
+                var alives = PlayerControl.AllPlayerControls.ToArray()
+                    .Where(x => !x.Data.IsDead && !x.Data.Disconnected).ToList();
+                if (alives.Count == 0) return false;
+                var flag = false;
+                foreach (var player in alives)
+                {
+                    if (player.Is(RoleEnum.Mercenary) && GetRole<Mercenary>(player).HasEnoughBrilders) flag = true;
+                }
+                return flag;
+            }
+
             if (CheckNoImpsNoCrews())
             {
                 if (SurvOnly())
@@ -242,6 +243,14 @@ namespace TownOfUs.Roles
                     Utils.Rpc(CustomRPC.SurvivorOnlyWin);
 
                     SurvOnlyWin();
+                    Utils.EndGame();
+                    return false;
+                }
+                else if (MercOnly())
+                {
+                    Utils.Rpc(CustomRPC.MercenaryOnlyWin);
+
+                    MercOnlyWin();
                     Utils.EndGame();
                     return false;
                 }
@@ -288,6 +297,24 @@ namespace TownOfUs.Roles
                 if (Player == exe.target && PlayerControl.LocalPlayer.Data.IsDead && !exe.Player.Data.IsDead)
                 {
                     PlayerName += "<color=#8C4005FF> X</color>";
+                }
+            }
+
+            foreach (var role in GetRoles(RoleEnum.Lawyer))
+            {
+                var lwyr = (Lawyer)role;
+                if (Player == lwyr.target && PlayerControl.LocalPlayer.Data.IsDead && !lwyr.Player.Data.IsDead)
+                {
+                    PlayerName += "<color=#D2B48CFF> @</color>";
+                }
+            }
+
+            foreach (var role in GetRoles(RoleEnum.Hunter))
+            {
+                var hunter = (Hunter)role;
+                if (hunter.CaughtPlayers.Any(pc => pc.PlayerId == Player.PlayerId) && PlayerControl.LocalPlayer.Data.IsDead && !hunter.Player.Data.IsDead)
+                {
+                    PlayerName += "<color=#29AB87FF> !!</color>";
                 }
             }
 
@@ -369,7 +396,6 @@ namespace TownOfUs.Roles
             var role = (T)Activator.CreateInstance(type, new object[] { player });
 
             Utils.Rpc(CustomRPC.SetRole, player.PlayerId, (string)type.FullName);
-            System.Console.WriteLine($"{player.Data.DefaultOutfit.PlayerName} GETS ROLE {(string)type.FullName}");
             return role;
         }
 
@@ -378,7 +404,6 @@ namespace TownOfUs.Roles
             var modifier = (T)Activator.CreateInstance(type, new object[] { player });
 
             Utils.Rpc(CustomRPC.SetModifier, player.PlayerId, (string)type.FullName);
-            System.Console.WriteLine($"{player.Data.DefaultOutfit.PlayerName} GETS MODIFIER {(string)type.FullName}");
             return modifier;
         }
 
@@ -765,6 +790,8 @@ namespace TownOfUs.Roles
                             if (role == null) return;
                             var roleName = role.RoleType == RoleEnum.Glitch ? role.Name : $"The {role.Name}";
                             __result = $"{info.PlayerName} was {roleName}.";
+                            role.DeathReason = DeathReasonEnum.Ejected;
+                            role.KilledBy = " ";
                             return;
                         }
                 }

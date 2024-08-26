@@ -8,6 +8,7 @@ namespace TownOfUs
         SetAssassin,
         SetTarget,
         SetGATarget,
+        SetDefendant,
 
         SetPhantom,
         CatchPhantom,
@@ -28,6 +29,7 @@ namespace TownOfUs
         PestilenceWin,
         WerewolfWin,
         SurvivorOnlyWin,
+        MercenaryOnlyWin,
         VampireWin,
 
         JanitorClean,
@@ -66,7 +68,6 @@ namespace TownOfUs
         Imitate,
         StartImitate,
         Bite,
-        Reveal,
         Prosecute,
         Confess,
         Bless,
@@ -75,6 +76,17 @@ namespace TownOfUs
         HunterStalk,
         HunterCatchPlayer,
         Retribution,
+        Poison,
+        UpdateImitator,
+        MercProtect,
+        MercShield,
+        DonArmor,
+        Campaign,
+        TurnMayor,
+        Bodyguard,
+        Reveal,
+        ImmortalRevive,
+        ScavengerClean,
 
         BypassKill,
         BypassMultiKill,
@@ -83,6 +95,7 @@ namespace TownOfUs
         SetHacked,
 
         ExecutionerToJester,
+        LawyerToJester,
         GAToSurv,
 
         Start,

@@ -10,9 +10,10 @@ namespace TownOfUs.Roles
         public readonly List<bool> ListOfActives = new List<bool>();
         public PlayerControl ImitatePlayer = null;
 
+        public PlayerControl LastExaminedPlayer = null;
         public List<RoleEnum> trappedPlayers = null;
         public PlayerControl confessingPlayer = null;
-
+        public Dictionary<string, int> LimitedRoleUses = new Dictionary<string, int>();
 
         public Imitator(PlayerControl player) : base(player)
         {

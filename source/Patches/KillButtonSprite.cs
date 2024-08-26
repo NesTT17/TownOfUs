@@ -1,5 +1,7 @@
 ﻿using AmongUs.GameOptions;
 using HarmonyLib;
+using System.Collections.Generic;
+using System.Linq;
 using TownOfUs.Extensions;
 using TownOfUs.Roles;
 using TownOfUs.Roles.Modifiers;
@@ -33,13 +35,18 @@ namespace TownOfUs
         private static Sprite Protect => TownOfUs.ProtectSprite;
         private static Sprite Infect => TownOfUs.InfectSprite;
         private static Sprite Trap => TownOfUs.TrapSprite;
-        private static Sprite Inspect => TownOfUs.InspectSprite;
+        private static Sprite Examine => TownOfUs.ExamineSprite;
         private static Sprite Swoop => TownOfUs.SwoopSprite;
         private static Sprite Observe => TownOfUs.ObserveSprite;
         private static Sprite Bite => TownOfUs.BiteSprite;
         private static Sprite Stake => TownOfUs.StakeSprite;
         private static Sprite Confess => TownOfUs.ConfessSprite;
         private static Sprite Radiate => TownOfUs.RadiateSprite;
+        private static Sprite Mercenary => TownOfUs.MercProtectSprite;
+        private static Sprite DonArmor => TownOfUs.DonArmorSprite;
+        private static Sprite Campaign => TownOfUs.CampaignSprite;
+        private static Sprite Bodyguard => TownOfUs.BodyguardSprite;
+        private static Sprite Devour => TownOfUs.DevourSprite;
 
         private static Sprite Kill;
 
@@ -47,6 +54,7 @@ namespace TownOfUs
         public static void Postfix(HudManager __instance)
         {
             if (__instance.KillButton == null) return;
+            if (!GameManager.Instance.GameHasStarted) return;
 
             if (!Kill) Kill = __instance.KillButton.graphic.sprite;
 
@@ -123,7 +131,7 @@ namespace TownOfUs
             }
             else if (PlayerControl.LocalPlayer.Is(RoleEnum.Detective))
             {
-                __instance.KillButton.graphic.sprite = Inspect;
+                __instance.KillButton.graphic.sprite = Examine;
                 flag = true;
             }
             else if (PlayerControl.LocalPlayer.Is(RoleEnum.Chameleon))
@@ -156,10 +164,34 @@ namespace TownOfUs
                 __instance.KillButton.graphic.sprite = Radiate;
                 flag = true;
             }
+            else if (PlayerControl.LocalPlayer.Is(RoleEnum.Mercenary))
+            {
+                __instance.KillButton.graphic.sprite = Mercenary;
+                flag = true;
+            }
+            else if (PlayerControl.LocalPlayer.Is(RoleEnum.Mayor))
+            {
+                __instance.KillButton.graphic.sprite = Bodyguard;
+                flag = true;
+            }
+            else if (PlayerControl.LocalPlayer.Is(RoleEnum.Politician))
+            {
+                __instance.KillButton.graphic.sprite = Campaign;
+                flag = true;
+            }
+            else if (PlayerControl.LocalPlayer.Is(RoleEnum.Scavenger))
+            {
+                __instance.KillButton.graphic.sprite = Devour;
+                flag = true;
+            }
             else
             {
                 __instance.KillButton.graphic.sprite = Kill;
                 __instance.KillButton.buttonLabelText.gameObject.SetActive(true);
+                PlayerControl closestPlayer = __instance.KillButton.currentTarget;
+                var validTargets = new List<PlayerControl>(PlayerControl.AllPlayerControls.ToArray()).Where(t => !t.Data.IsDead && !t.Data.Disconnected && (Role.GetRole(PlayerControl.LocalPlayer).Faction != Faction.Impostors || Role.GetRole(t).Faction != Faction.Impostors)).ToList();
+                Utils.SetTarget(ref closestPlayer, __instance.KillButton, targets: validTargets, allowVented: true);
+                __instance.KillButton.currentTarget = closestPlayer;
                 __instance.KillButton.buttonLabelText.text = "Kill";
                 flag = PlayerControl.LocalPlayer.Is(RoleEnum.Sheriff) || PlayerControl.LocalPlayer.Is(RoleEnum.Pestilence) ||
                     PlayerControl.LocalPlayer.Is(RoleEnum.Werewolf) || PlayerControl.LocalPlayer.Is(RoleEnum.Juggernaut);
@@ -171,7 +203,7 @@ namespace TownOfUs
             }
             if (PlayerControl.LocalPlayer.Is(RoleEnum.Engineer) || PlayerControl.LocalPlayer.Is(RoleEnum.Glitch)
                  || PlayerControl.LocalPlayer.Is(RoleEnum.Pestilence) || PlayerControl.LocalPlayer.Is(RoleEnum.Juggernaut)
-                 || PlayerControl.LocalPlayer.Is(RoleEnum.Vampire))
+                 || PlayerControl.LocalPlayer.Is(RoleEnum.Vampire) || PlayerControl.LocalPlayer.Is(RoleEnum.Scavenger))
             {
                 __instance.ImpostorVentButton.transform.localPosition = new Vector3(-2f, 0f, 0f);
             }

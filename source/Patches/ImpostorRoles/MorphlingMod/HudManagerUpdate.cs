@@ -32,10 +32,11 @@ namespace TownOfUs.ImpostorRoles.MorphlingMod
 
             role.MorphButton.gameObject.SetActive((__instance.UseButton.isActiveAndEnabled || __instance.PetButton.isActiveAndEnabled)
                     && !MeetingHud.Instance && !PlayerControl.LocalPlayer.Data.IsDead
-                    && AmongUsClient.Instance.GameState == InnerNet.InnerNetClient.GameStates.Started);
+                    && AmongUsClient.Instance.GameState == InnerNet.InnerNetClient.GameStates.Started
+                    && !Utils.HasTask(TaskTypes.MushroomMixupSabotage));
             if (role.MorphButton.graphic.sprite == SampleSprite)
             {
-                role.MorphButton.SetCoolDown(0f, 1f);
+                role.MorphButton.SetCoolDown(role.SampleTimer(), CustomGameOptions.ProtectAbsorbCd);
                 Utils.SetTarget(ref role.ClosestPlayer, role.MorphButton);
             }
             else

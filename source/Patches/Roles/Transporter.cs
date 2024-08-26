@@ -10,6 +10,7 @@ using TownOfUs.Patches;
 using System.Collections;
 using TownOfUs.Extensions;
 using TownOfUs.CrewmateRoles.MedicMod;
+using TownOfUs.NeutralRoles.MercenaryMod;
 
 namespace TownOfUs.Roles
 {
@@ -388,7 +389,7 @@ namespace TownOfUs.Roles
             if (PlayerControl.LocalPlayer.PlayerId == TP1.PlayerId ||
                 PlayerControl.LocalPlayer.PlayerId == TP2.PlayerId)
             {
-                Coroutines.Start(Utils.FlashCoroutine(Patches.Colors.Transporter));
+                Utils.ShowAnimatedFlash(Patches.Colors.Transporter);
                 if (Minigame.Instance) Minigame.Instance.Close();
             }
 
@@ -412,6 +413,26 @@ namespace TownOfUs.Roles
         {
             if (!UntransportablePlayers.ContainsKey(TransportPlayer1.PlayerId) && !UntransportablePlayers.ContainsKey(TransportPlayer2.PlayerId))
             {
+                var role = GetRole(Player);
+                var transRole = (Transporter)role;
+                if (TransportPlayer1.IsMercShielded() || TransportPlayer2.IsMercShielded())
+                {
+                    if (TransportPlayer1.IsMercShielded())
+                    {
+                        var merc = TransportPlayer1.GetMerc().Player.PlayerId;
+                        Utils.Rpc(CustomRPC.MercShield, merc, TransportPlayer1.PlayerId);
+                        StopAbility.BreakShield(merc, TransportPlayer1.PlayerId);
+                    }
+                    else if (TransportPlayer2.IsMercShielded())
+                    {
+                        var merc = TransportPlayer2.GetMerc().Player.PlayerId;
+                        Utils.Rpc(CustomRPC.MercShield, merc, TransportPlayer2.PlayerId);
+                        StopAbility.BreakShield(merc, TransportPlayer2.PlayerId);
+                    }
+                    transRole.LastTransported = DateTime.UtcNow;
+                    transRole.LastTransported = transRole.LastTransported.AddSeconds(CustomGameOptions.ProtectAbsorbCd - CustomGameOptions.TransportCooldown);
+                    return;
+                }
                 if (Player.IsInfected() || TransportPlayer1.IsInfected())
                 {
                     foreach (var pb in GetRoles(RoleEnum.Plaguebearer)) ((Plaguebearer)pb).RpcSpreadInfection(Player, TransportPlayer1);
@@ -420,9 +441,15 @@ namespace TownOfUs.Roles
                 {
                     foreach (var pb in GetRoles(RoleEnum.Plaguebearer)) ((Plaguebearer)pb).RpcSpreadInfection(Player, TransportPlayer2);
                 }
-                var role = GetRole(Player);
-                var transRole = (Transporter)role;
-                if (TransportPlayer1.Is(RoleEnum.Pestilence) || TransportPlayer1.IsOnAlert())
+                if (Player.IsCampaigned() || TransportPlayer1.IsCampaigned())
+                {
+                    foreach (var pn in Role.GetRoles(RoleEnum.Politician)) ((Politician)pn).RpcSpreadCampaign(Player, TransportPlayer1);
+                }
+                if (Player.IsCampaigned() || TransportPlayer2.IsCampaigned())
+                {
+                    foreach (var pn in Role.GetRoles(RoleEnum.Politician)) ((Politician)pn).RpcSpreadCampaign(Player, TransportPlayer2);
+                }
+                if (TransportPlayer1.Is(RoleEnum.Pestilence) || TransportPlayer1.IsOnAlert() || TransportPlayer1.IsBodyguarded())
                 {
                     if (Player.IsShielded())
                     {
@@ -436,6 +463,14 @@ namespace TownOfUs.Roles
                     }
                     else if (!Player.IsProtected())
                     {
+                        // Pestilence is not an ability, so merc shield does not block the kill
+                        bool blockVetAlert = TransportPlayer1.IsOnAlert() && Player.IsMercShielded();
+                        if (blockVetAlert)
+                        {
+                            var merc = Player.GetMerc().Player.PlayerId;
+                            Utils.Rpc(CustomRPC.MercShield, merc, Player.PlayerId);
+                            StopAbility.BreakShield(merc, Player.PlayerId);
+                        }
                         Coroutines.Start(TransportPlayers(TransportPlayer1.PlayerId, Player.PlayerId, true));
 
                         Utils.Rpc(CustomRPC.Transport, TransportPlayer1.PlayerId, Player.PlayerId, true);
@@ -444,7 +479,7 @@ namespace TownOfUs.Roles
                     transRole.LastTransported = DateTime.UtcNow;
                     return;
                 }
-                else if (TransportPlayer2.Is(RoleEnum.Pestilence) || TransportPlayer2.IsOnAlert())
+                else if (TransportPlayer2.Is(RoleEnum.Pestilence) || TransportPlayer2.IsOnAlert() || TransportPlayer2.IsBodyguarded())
                 {
                     if (Player.IsShielded())
                     {
@@ -458,6 +493,13 @@ namespace TownOfUs.Roles
                     }
                     else if (!Player.IsProtected())
                     {
+                        bool blockVetAlert = TransportPlayer2.IsOnAlert() && Player.IsMercShielded();
+                        if (blockVetAlert)
+                        {
+                            var merc = Player.GetMerc().Player.PlayerId;
+                            Utils.Rpc(CustomRPC.MercShield, merc, Player.PlayerId);
+                            StopAbility.BreakShield(merc, Player.PlayerId);
+                        }
                         Coroutines.Start(TransportPlayers(TransportPlayer2.PlayerId, Player.PlayerId, true));
 
                         Utils.Rpc(CustomRPC.Transport, TransportPlayer2.PlayerId, Player.PlayerId, true);
@@ -468,6 +510,12 @@ namespace TownOfUs.Roles
                 }
                 LastTransported = DateTime.UtcNow;
                 UsesLeft--;
+
+                foreach (Role hunterRole in Role.GetRoles(RoleEnum.Hunter))
+                {
+                    Hunter hunter = (Hunter)hunterRole;
+                    hunter.CatchPlayer(Player);
+                }
 
                 Coroutines.Start(TransportPlayers(TransportPlayer1.PlayerId, TransportPlayer2.PlayerId, false));
 

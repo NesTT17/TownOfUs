@@ -5,6 +5,7 @@ using TownOfUs.Extensions;
 using TownOfUs.Roles;
 using AmongUs.GameOptions;
 using TownOfUs.Patches;
+using TownOfUs.NeutralRoles.MercenaryMod;
 
 namespace TownOfUs.CrewmateRoles.SheriffMod
 {
@@ -36,6 +37,7 @@ namespace TownOfUs.CrewmateRoles.SheriffMod
                         role.ClosestPlayer.Is(RoleEnum.Executioner) && CustomGameOptions.SheriffKillsExecutioner ||
                         role.ClosestPlayer.Is(RoleEnum.Arsonist) && CustomGameOptions.SheriffKillsArsonist ||
                         role.ClosestPlayer.Is(RoleEnum.Werewolf) && CustomGameOptions.SheriffKillsWerewolf ||
+                        role.ClosestPlayer.Is(RoleEnum.Scavenger) && CustomGameOptions.SheriffKillsScavenger ||
                         role.ClosestPlayer.Is(RoleEnum.Plaguebearer) && CustomGameOptions.SheriffKillsPlaguebearer;
 
             if (role.ClosestPlayer.Is(RoleEnum.Pestilence))
@@ -53,40 +55,71 @@ namespace TownOfUs.CrewmateRoles.SheriffMod
                 hunter.CatchPlayer(role.Player);
             }
             if (role.ClosestPlayer.IsOnAlert())
+            if (role.ClosestPlayer.IsCampaigned() || role.Player.IsCampaigned())
             {
-                if (role.ClosestPlayer.IsShielded())
+                foreach (var pn in Role.GetRoles(RoleEnum.Politician)) ((Politician)pn).RpcSpreadCampaign(role.ClosestPlayer, role.Player);
+            }
+            if (role.ClosestPlayer.IsOnAlert() || role.ClosestPlayer.IsBodyguarded())
+            {
+                var bodyguarded = role.ClosestPlayer.IsBodyguarded();
+                var onAlert = role.ClosestPlayer.IsOnAlert();
+                if (!role.Player.IsMercShielded())
                 {
-                    var medic = role.ClosestPlayer.GetMedic().Player.PlayerId;
-                    Utils.Rpc(CustomRPC.AttemptSound, medic, role.ClosestPlayer.PlayerId);
+                    if (role.ClosestPlayer.IsMercShielded())
+                    {
+                        var merc = role.ClosestPlayer.GetMerc().Player.PlayerId;
+                        Utils.Rpc(CustomRPC.MercShield, merc, role.ClosestPlayer.PlayerId);
+                        role.LastKilled = DateTime.UtcNow;
 
-                    if (CustomGameOptions.ShieldBreaks) role.LastKilled = DateTime.UtcNow;
+                    StopAbility.BreakShield(merc, role.ClosestPlayer.PlayerId);
+                    }
+                    else if (role.ClosestPlayer.IsShielded())
+                    {
+                        var medic = role.ClosestPlayer.GetMedic().Player.PlayerId;
+                        Utils.Rpc(CustomRPC.AttemptSound, medic, role.ClosestPlayer.PlayerId);
+
+                        if (CustomGameOptions.ShieldBreaks) role.LastKilled = DateTime.UtcNow;
 
                     StopKill.BreakShield(medic, role.ClosestPlayer.PlayerId, CustomGameOptions.ShieldBreaks);
 
-                    Utils.RpcMurderPlayer(role.ClosestPlayer, PlayerControl.LocalPlayer);
-                }
-                else if (role.Player.IsShielded())
-                {
-                    var medic = role.Player.GetMedic().Player.PlayerId;
-                    Utils.Rpc(CustomRPC.AttemptSound, medic, role.Player.PlayerId);
-                    if (CustomGameOptions.ShieldBreaks) role.LastKilled = DateTime.UtcNow;
-                    StopKill.BreakShield(medic, role.Player.PlayerId, CustomGameOptions.ShieldBreaks);
-                    Utils.RpcMurderPlayer(PlayerControl.LocalPlayer, PlayerControl.LocalPlayer);
-                    if (CustomGameOptions.SheriffKillOther && !role.ClosestPlayer.IsProtected() && CustomGameOptions.KilledOnAlert)
-                        Utils.RpcMurderPlayer(PlayerControl.LocalPlayer, role.ClosestPlayer);
+                        Utils.RpcMurderPlayer(role.ClosestPlayer, PlayerControl.LocalPlayer);
+                    }
+                    else if (role.Player.IsShielded())
+                    {
+                        var medic = role.Player.GetMedic().Player.PlayerId;
+                        Utils.Rpc(CustomRPC.AttemptSound, medic, role.Player.PlayerId);
+                        if (CustomGameOptions.ShieldBreaks) role.LastKilled = DateTime.UtcNow;
+                        StopKill.BreakShield(medic, role.Player.PlayerId, CustomGameOptions.ShieldBreaks);
+                        Utils.RpcMurderPlayer(PlayerControl.LocalPlayer, PlayerControl.LocalPlayer);
+                        if (CustomGameOptions.SheriffKillOther && !role.ClosestPlayer.IsProtected() && CustomGameOptions.KilledOnAlert)
+                            Utils.RpcMurderPlayer(PlayerControl.LocalPlayer, role.ClosestPlayer);
+                    }
+                    else
+                    {
+                        Utils.RpcMurderPlayer(role.ClosestPlayer, PlayerControl.LocalPlayer);
+                        if (onAlert && CustomGameOptions.KilledOnAlert && CustomGameOptions.SheriffKillOther)
+                        {
+                            Utils.RpcMurderPlayer(PlayerControl.LocalPlayer, role.ClosestPlayer);
+                        }
+                        if (bodyguarded && CustomGameOptions.KilledOnBodyguard && CustomGameOptions.SheriffKillOther)
+                        {
+                            Utils.RpcMurderPlayer(PlayerControl.LocalPlayer, role.ClosestPlayer);
+                        }
+                    }
+
+                    return false;
                 }
                 else
                 {
-                    Utils.RpcMurderPlayer(role.ClosestPlayer, PlayerControl.LocalPlayer);
-                    if (CustomGameOptions.KilledOnAlert && CustomGameOptions.SheriffKillOther)
-                    {
-                        Utils.RpcMurderPlayer(PlayerControl.LocalPlayer, role.ClosestPlayer);
-                    }
+                    // The Merc shield absorbs the Veteran alert, and the kill attempt goes through.
+                    var merc = role.Player.GetMerc().Player.PlayerId;
+                    Utils.Rpc(CustomRPC.MercShield, merc, role.Player.PlayerId);
+                    StopAbility.BreakShield(merc, role.Player.PlayerId);
                 }
 
                 return false;
             }
-            else if (role.ClosestPlayer == ShowRoundOneShield.FirstRoundShielded) return false;
+            if (role.ClosestPlayer == ShowRoundOneShield.FirstRoundShielded) return false;
             else if (role.ClosestPlayer.IsShielded())
             {
                 var medic = role.ClosestPlayer.GetMedic().Player.PlayerId;
@@ -96,6 +129,22 @@ namespace TownOfUs.CrewmateRoles.SheriffMod
 
                 StopKill.BreakShield(medic, role.ClosestPlayer.PlayerId, CustomGameOptions.ShieldBreaks);
 
+                return false;
+            }
+            else if (role.ClosestPlayer.IsMercShielded())
+            {
+                var merc = role.ClosestPlayer.GetMerc().Player.PlayerId;
+                Utils.Rpc(CustomRPC.MercShield, merc, role.ClosestPlayer.PlayerId);
+                role.LastKilled = DateTime.UtcNow;
+                role.LastKilled = role.LastKilled.AddSeconds(CustomGameOptions.ProtectAbsorbCd - CustomGameOptions.SheriffKillCd);
+                StopAbility.BreakShield(merc, role.ClosestPlayer.PlayerId);
+
+                return false;
+            }
+            else if (role.ClosestPlayer.IsArmored())
+            {
+                role.LastKilled = DateTime.UtcNow;
+                role.LastKilled = role.LastKilled.AddSeconds(CustomGameOptions.ProtectAbsorbCd - CustomGameOptions.SheriffKillCd);
                 return false;
             }
             else if (role.ClosestPlayer.IsVesting())

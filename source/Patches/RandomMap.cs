@@ -145,6 +145,9 @@ namespace TownOfUs
             Generate.RadiateCooldown.Set((float)Generate.RadiateCooldown.Value + change, false);
             Generate.ReviveCooldown.Set((float)Generate.ReviveCooldown.Value + change, false);
             Generate.WhisperCooldown.Set((float)Generate.WhisperCooldown.Value + change, false);
+            Generate.BodyguardCooldown.Set((float)Generate.BodyguardCooldown.Value + change, false);
+            Generate.CampaignCooldown.Set((float)Generate.CampaignCooldown.Value + change, false);
+            Generate.DevourCooldown.Set((float)Generate.DevourCooldown.Value + change, false);
             GameOptionsManager.Instance.currentNormalGameOptions.KillCooldown += change;
             if (change % 5 != 0)
             {

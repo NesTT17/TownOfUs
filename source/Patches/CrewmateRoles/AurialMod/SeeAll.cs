@@ -50,20 +50,8 @@ namespace TownOfUs.CrewmateRoles.AurialMod
 
                 if (s.SeeDelay() != 0f)
                 {
-                    if (player.Is(RoleEnum.Mayor))
-                    {
-                        var mayor = Role.GetRole<Mayor>(player);
-                        if (!mayor.Revealed)
-                        {
-                            ColorChar(player, Color.clear);
-                            continue;
-                        }
-                    }
-                    else
-                    {
-                        ColorChar(player, Color.clear);
-                        continue;
-                    }
+                    ColorChar(player, Color.clear);
+                    continue;
                 }
 
                 if (!Check(s, player))

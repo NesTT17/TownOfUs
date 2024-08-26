@@ -44,18 +44,22 @@ namespace TownOfUs.Roles
                 if (CustomGameOptions.BomberOn > 0) ColorMapping.Add("Bomber", Colors.Impostor);
                 if (CustomGameOptions.WarlockOn > 0) ColorMapping.Add("Warlock", Colors.Impostor);
                 if (CustomGameOptions.VenererOn > 0) ColorMapping.Add("Venerer", Colors.Impostor);
+                if (CustomGameOptions.PoisonerOn > 0) ColorMapping.Add("Poisoner", Colors.Impostor);
 
                 if (CustomGameOptions.VigilanteGuessNeutralBenign)
                 {
-                    if (CustomGameOptions.AmnesiacOn > 0 || (CustomGameOptions.ExecutionerOn > 0 && CustomGameOptions.OnTargetDead == OnTargetDead.Amnesiac) || (CustomGameOptions.GuardianAngelOn > 0 && CustomGameOptions.GaOnTargetDeath == BecomeOptions.Amnesiac)) ColorMapping.Add("Amnesiac", Colors.Amnesiac);
+                    if (CustomGameOptions.AmnesiacOn > 0 || (CustomGameOptions.ExecutionerOn > 0 && CustomGameOptions.OnTargetDead == OnTargetDead.Amnesiac) || (CustomGameOptions.GuardianAngelOn > 0 && CustomGameOptions.GaOnTargetDeath == BecomeOptions.Amnesiac) || (CustomGameOptions.LawyerOn > 0 && CustomGameOptions.OnDefendantDead == NeutralRoles.LawyerMod.OnDefendantDead.Amnesiac)) ColorMapping.Add("Amnesiac", Colors.Amnesiac);
                     if (CustomGameOptions.GuardianAngelOn > 0) ColorMapping.Add("Guardian Angel", Colors.GuardianAngel);
-                    if (CustomGameOptions.SurvivorOn > 0 || (CustomGameOptions.ExecutionerOn > 0 && CustomGameOptions.OnTargetDead == OnTargetDead.Survivor) || (CustomGameOptions.GuardianAngelOn > 0 && CustomGameOptions.GaOnTargetDeath == BecomeOptions.Survivor)) ColorMapping.Add("Survivor", Colors.Survivor);
+                    if (CustomGameOptions.LawyerOn > 0) ColorMapping.Add("Lawyer", Colors.Lawyer);
+                    if (CustomGameOptions.MercenaryOn > 0) ColorMapping.Add("Mercenary", Colors.Mercenary);
+                    if (CustomGameOptions.SurvivorOn > 0 || (CustomGameOptions.ExecutionerOn > 0 && CustomGameOptions.OnTargetDead == OnTargetDead.Survivor) || (CustomGameOptions.GuardianAngelOn > 0 && CustomGameOptions.GaOnTargetDeath == BecomeOptions.Survivor) || (CustomGameOptions.LawyerOn > 0 && CustomGameOptions.OnDefendantDead == NeutralRoles.LawyerMod.OnDefendantDead.Survivor)) ColorMapping.Add("Survivor", Colors.Survivor);
                 }
                 if (CustomGameOptions.VigilanteGuessNeutralEvil)
                 {
                     if (CustomGameOptions.DoomsayerOn > 0) ColorMapping.Add("Doomsayer", Colors.Doomsayer);
                     if (CustomGameOptions.ExecutionerOn > 0) ColorMapping.Add("Executioner", Colors.Executioner);
-                    if (CustomGameOptions.JesterOn > 0 || (CustomGameOptions.ExecutionerOn > 0 && CustomGameOptions.OnTargetDead == OnTargetDead.Jester) || (CustomGameOptions.GuardianAngelOn > 0 && CustomGameOptions.GaOnTargetDeath == BecomeOptions.Jester)) ColorMapping.Add("Jester", Colors.Jester);
+                    if (CustomGameOptions.JesterOn > 0 || (CustomGameOptions.ExecutionerOn > 0 && CustomGameOptions.OnTargetDead == OnTargetDead.Jester) || (CustomGameOptions.GuardianAngelOn > 0 && CustomGameOptions.GaOnTargetDeath == BecomeOptions.Jester) || (CustomGameOptions.LawyerOn > 0 && CustomGameOptions.OnDefendantDead == NeutralRoles.LawyerMod.OnDefendantDead.Jester)) ColorMapping.Add("Jester", Colors.Jester);
+                    if (CustomGameOptions.ScavengerOn > 0) ColorMapping.Add("Scavenger", Colors.Scavenger);
                 }
                 if (CustomGameOptions.VigilanteGuessNeutralKilling)
                 {

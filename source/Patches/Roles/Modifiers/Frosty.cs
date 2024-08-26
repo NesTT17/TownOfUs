@@ -12,7 +12,7 @@ namespace TownOfUs.Roles.Modifiers
         {
             Name = "Frosty";
             TaskText = () => "Leave behind an icy surprise";
-            Color = Patches.Colors.Frosty;
+            Color = Patches.Colors.CrewModifier;
             ModifierType = ModifierEnum.Frosty;
         }
     }

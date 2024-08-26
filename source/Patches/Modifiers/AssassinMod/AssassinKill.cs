@@ -13,6 +13,7 @@ using TownOfUs.Extensions;
 using TownOfUs.CrewmateRoles.ImitatorMod;
 using TownOfUs.Patches;
 using Reactor.Utilities.Extensions;
+using Hazel;
 
 namespace TownOfUs.Modifiers.AssassinMod
 {
@@ -137,12 +138,6 @@ namespace TownOfUs.Modifiers.AssassinMod
                     var doomsayer = Role.GetRole<Doomsayer>(PlayerControl.LocalPlayer);
                     ShowHideButtonsDoom.HideButtonsDoom(doomsayer);
                 }
-
-                if (player.Is(RoleEnum.Mayor))
-                {
-                    var mayor = Role.GetRole<Mayor>(PlayerControl.LocalPlayer);
-                    mayor.RevealButton.Destroy();
-                }
             }
             player.Die(DeathReason.Kill, false);
             if (checkLover && player.IsLover() && CustomGameOptions.BothLoversDie)
@@ -150,6 +145,11 @@ namespace TownOfUs.Modifiers.AssassinMod
                 var otherLover = Modifier.GetModifier<Lover>(player).OtherLover.Player;
                 if (!otherLover.Is(RoleEnum.Pestilence)) MurderPlayer(otherLover, false);
             }
+
+            var role2 = Role.GetRole(player);
+            var assassinPlayer = Ability.GetAbility<Assassin>(player);
+            role2.DeathReason = DeathReasonEnum.Guessed;
+            role2.KilledBy = " By " + Utils.ColorString(Colors.Impostor, assassinPlayer.PlayerName);
 
             var deadPlayer = new DeadPlayer
             {
@@ -238,7 +238,10 @@ namespace TownOfUs.Modifiers.AssassinMod
                 meetingHud.ClearVote();
             }
 
-            if (AmongUsClient.Instance.AmHost) meetingHud.CheckForEndVoting();
+            if (AmongUsClient.Instance.AmHost)
+            {
+                meetingHud.CheckForEndVoting();
+            }
 
             AddHauntPatch.AssassinatedPlayers.Add(player);
         }

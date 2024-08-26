@@ -11,6 +11,7 @@ namespace TownOfUs.Roles
         public KillButton _morphButton;
         public PlayerControl ClosestPlayer;
         public DateTime LastMorphed;
+        public DateTime SampleCooldown;
         public PlayerControl MorphedPlayer;
 
         public PlayerControl SampledPlayer;
@@ -55,6 +56,7 @@ namespace TownOfUs.Roles
         {
             MorphedPlayer = null;
             Utils.Unmorph(Player);
+            TimeRemaining = 0f;
             LastMorphed = DateTime.UtcNow;
         }
 
@@ -63,6 +65,16 @@ namespace TownOfUs.Roles
             var utcNow = DateTime.UtcNow;
             var timeSpan = utcNow - LastMorphed;
             var num = CustomGameOptions.MorphlingCd * 1000f;
+            var flag2 = num - (float)timeSpan.TotalMilliseconds < 0f;
+            if (flag2) return 0;
+            return (num - (float)timeSpan.TotalMilliseconds) / 1000f;
+        }
+
+        public float SampleTimer()
+        {
+            var utcNow = DateTime.UtcNow;
+            var timeSpan = utcNow - SampleCooldown;
+            var num = 10000f;
             var flag2 = num - (float)timeSpan.TotalMilliseconds < 0f;
             if (flag2) return 0;
             return (num - (float)timeSpan.TotalMilliseconds) / 1000f;

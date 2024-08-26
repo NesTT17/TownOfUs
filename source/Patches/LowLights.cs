@@ -38,7 +38,8 @@ namespace TownOfUs
                 player._object.Is(RoleEnum.Juggernaut) || player._object.Is(RoleEnum.Pestilence) ||
                 (player._object.Is(RoleEnum.Jester) && CustomGameOptions.JesterImpVision) ||
                 (player._object.Is(RoleEnum.Arsonist) && CustomGameOptions.ArsoImpVision) ||
-                (player._object.Is(RoleEnum.Vampire) && CustomGameOptions.VampImpVision))
+                (player._object.Is(RoleEnum.Vampire) && CustomGameOptions.VampImpVision) ||
+                (player._object.Is(RoleEnum.Scavenger) && CustomGameOptions.ScavImpVision))
             {
                 __result = __instance.MaxLightRadius * GameOptionsManager.Instance.currentNormalGameOptions.ImpostorLightMod;
                 return false;
@@ -62,17 +63,6 @@ namespace TownOfUs
             var t = switchSystem != null ? switchSystem.Value / 255f : 1;
 
             if (player._object.Is(ModifierEnum.Torch)) t = 1;
-
-            if (player._object.Is(RoleEnum.Mayor))
-            {
-                var role = Role.GetRole<Mayor>(player._object);
-                if (role.Revealed)
-                {
-                    __result = Mathf.Lerp(__instance.MinLightRadius, __instance.MaxLightRadius/2, t) *
-                       GameOptionsManager.Instance.currentNormalGameOptions.CrewLightMod;
-                    return false;
-                }
-            }
 
             __result = Mathf.Lerp(__instance.MinLightRadius, __instance.MaxLightRadius, t) *
                        GameOptionsManager.Instance.currentNormalGameOptions.CrewLightMod;

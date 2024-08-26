@@ -18,6 +18,8 @@ namespace TownOfUs.Patches
             if (exeRole != null) neWin = true;
             var jestRole = Role.AllRoles.FirstOrDefault(x => x.RoleType == RoleEnum.Jester && ((Jester)x).VotedOut && ((Jester)x).Player == PlayerControl.LocalPlayer);
             if (jestRole != null) neWin = true;
+            var scavRole = Role.AllRoles.FirstOrDefault(x => x.RoleType == RoleEnum.Scavenger && ((Scavenger)x).WonByDevouring && ((Scavenger)x).Player == PlayerControl.LocalPlayer);
+            if (scavRole != null) neWin = true;
             var phantomRole = Role.AllRoles.FirstOrDefault(x => x.RoleType == RoleEnum.Phantom && ((Phantom)x).CompletedTasks && ((Phantom)x).Player == PlayerControl.LocalPlayer);
             if (phantomRole != null) neWin = true;
             if (neWin)

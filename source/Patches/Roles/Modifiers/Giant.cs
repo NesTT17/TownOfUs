@@ -10,7 +10,7 @@ namespace TownOfUs.Roles.Modifiers
             var slowText = CustomGameOptions.GiantSlow != 1? " and slow!" : "!";
             Name = "Giant";
             TaskText = () => "You are ginormous" + slowText;
-            Color = Patches.Colors.Giant;
+            Color = Patches.Colors.GlobalModifier;
             ModifierType = ModifierEnum.Giant;
         }
 
