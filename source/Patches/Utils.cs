@@ -550,8 +550,6 @@ namespace TownOfUs
         public static void MurderPlayer(PlayerControl killer, PlayerControl target, bool jumpToBody)
         {
             var data = target.Data;
-            var targetRole = Role.GetRole(target);
-            var killerRole = Role.GetRole(killer);
 
             if (data != null && !data.IsDead)
             {
@@ -699,12 +697,6 @@ namespace TownOfUs
                     killer.MyPhysics.StartCoroutine(killer.KillAnimations.Random().CoPerformKill(killer, target));
                 }
                 else killer.MyPhysics.StartCoroutine(killer.KillAnimations.Random().CoPerformKill(target, target));
-
-                if (killer != target)
-                {
-                    targetRole.KilledBy = " By " + ColorString(killerRole.Color, killerRole.PlayerName);
-                    targetRole.DeathReason = DeathReasonEnum.Killed;
-                } else targetRole.DeathReason = DeathReasonEnum.Suicide;
 
                 if (target.Is(ModifierEnum.Frosty))
                 {
@@ -1648,39 +1640,6 @@ namespace TownOfUs
         {
             f = Mathf.Clamp01(f);
             return (byte)(f * 255);
-        }
-
-        public static string DeathReason(this PlayerControl player)
-        {
-            if (player == null)
-                return "";
-
-            var role = Role.GetRole(player);
-
-            if (role == null)
-                return " Null";
-
-            var die = "";
-            var killedBy = "";
-            var result = "";
-
-            if (role.DeathReason == DeathReasonEnum.Killed)
-                die = "Killed";
-            else if (role.DeathReason == DeathReasonEnum.Ejected)
-                die = "Ejected";
-            else if (role.DeathReason == DeathReasonEnum.Guessed)
-                die = "Guessed";
-            else if (role.DeathReason == DeathReasonEnum.Alive)
-                die = "Alive";
-            else if (role.DeathReason == DeathReasonEnum.Suicide)
-                die = "Suicide";
-
-            if (role.DeathReason != DeathReasonEnum.Alive && role.DeathReason != DeathReasonEnum.Ejected && role.DeathReason != DeathReasonEnum.Suicide)
-                killedBy = role.KilledBy;
-
-            result = die + killedBy;
-
-            return result;
         }
 
         public static bool IsOtherLover(this PlayerControl player, PlayerControl source)
