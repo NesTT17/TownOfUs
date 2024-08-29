@@ -30,6 +30,8 @@ using System.Reflection;
 using System.IO;
 using TownOfUs.NeutralRoles.MercenaryMod;
 using TownOfUs.CrewmateRoles.ImmortalMod;
+using InnerNet;
+using TownOfUs.ImpostorRoles.TraitorMod;
 
 namespace TownOfUs
 {
@@ -39,7 +41,17 @@ namespace TownOfUs
         public static Vent polusVent = null;
         internal static bool ShowDeadBodies = false;
         public static string previousEndGameSummary = "";
-        private static GameData.PlayerInfo voteTarget = null;
+        private static NetworkedPlayerInfo voteTarget = null;
+        public static System.Random rnd = new System.Random((int)DateTime.Now.Ticks);
+        public static Dictionary<byte, PoolablePlayer> playerIcons = new Dictionary<byte, PoolablePlayer>();
+
+        public static string GetSummaryString() {
+            return previousEndGameSummary;
+        }
+
+        public static void SetSummaryString(string text) {
+            previousEndGameSummary = text;
+        }
 
         public static void Morph(PlayerControl player, PlayerControl MorphedPlayer, bool resetAnim = false)
         {
@@ -62,7 +74,7 @@ namespace TownOfUs
 
         public static void DoCamouflage(PlayerControl player)
         {
-            player.SetOutfit(CustomPlayerOutfitType.Camouflage, new GameData.PlayerOutfit()
+            player.SetOutfit(CustomPlayerOutfitType.Camouflage, new NetworkedPlayerInfo.PlayerOutfit()
             {
                 ColorId = player.GetDefaultOutfit().ColorId,
                 HatId = "",
@@ -142,7 +154,7 @@ namespace TownOfUs
         }
 
         public static List<PlayerControl> GetImpostors(
-            List<GameData.PlayerInfo> infected)
+            List<NetworkedPlayerInfo> infected)
         {
             var impostors = new List<PlayerControl>();
             foreach (var impData in infected)
@@ -370,7 +382,6 @@ namespace TownOfUs
             {
                 Rpc(CustomRPC.AttemptSound, target.GetMedic().Player.PlayerId, target.PlayerId);
 
-                System.Console.WriteLine(CustomGameOptions.ShieldBreaks + "- shield break");
                 if (CustomGameOptions.ShieldBreaks) fullCooldownReset = true;
                 else zeroSecReset = true;
                 StopKill.BreakShield(target.GetMedic().Player.PlayerId, target.PlayerId, CustomGameOptions.ShieldBreaks);
@@ -453,10 +464,10 @@ namespace TownOfUs
         {
             Il2CppSystem.Collections.Generic.List<PlayerControl> playerControlList = new Il2CppSystem.Collections.Generic.List<PlayerControl>();
             float lightRadius = radius * ShipStatus.Instance.MaxLightRadius;
-            Il2CppSystem.Collections.Generic.List<GameData.PlayerInfo> allPlayers = GameData.Instance.AllPlayers;
+            Il2CppSystem.Collections.Generic.List<NetworkedPlayerInfo> allPlayers = GameData.Instance.AllPlayers;
             for (int index = 0; index < allPlayers.Count; ++index)
             {
-                GameData.PlayerInfo playerInfo = allPlayers[index];
+                NetworkedPlayerInfo playerInfo = allPlayers[index];
                 if (!playerInfo.Disconnected && (!playerInfo.Object.Data.IsDead || includeDead))
                 {
                     Vector2 vector2 = new Vector2(playerInfo.Object.GetTruePosition().x - truePosition.x, playerInfo.Object.GetTruePosition().y - truePosition.y);
@@ -610,15 +621,13 @@ namespace TownOfUs
 
                 if (PlayerControl.LocalPlayer.Is(RoleEnum.Mystic) && !PlayerControl.LocalPlayer.Data.IsDead)
                 {
-                    ShowAnimatedFlash(Patches.Colors.Mystic);
+                    Coroutines.Start(Utils.FlashCoroutine(Patches.Colors.Mystic));
                 }
 
-                if (!CustomGameOptions.GhostsDoTasks)
+                if (!CustomGameOptions.GhostsDoTasks && !PlayerControl.LocalPlayer.Is(RoleEnum.Haunter) && !PlayerControl.LocalPlayer.Is(RoleEnum.Phantom))
                 {
                     if (AmongUsClient.Instance.AmHost)
                     {
-                        var modded_criteria = Role.ShipStatus_KMPKPPGPNIH.Prefix((LogicGameFlowNormal)GameManager.Instance.LogicFlow);
-                        if (modded_criteria) GameManager.Instance.LogicFlow.CheckEndCriteria();
                         if (GameManager.Instance.ShouldCheckForGameEnd && target.myTasks.ToArray().Count(x => !x.IsComplete) + GameData.Instance.CompletedTasks < GameData.Instance.TotalTasks)
                         {
                             // Host should only process tasks being removed if the game wouldn't have ended otherwise.
@@ -628,7 +637,8 @@ namespace TownOfUs
                                 GameData.Instance.CompleteTask(target, playerTask.Id);
                             }
                         }
-                    } else
+                    }
+                    else
                     {
                         for (var i = 0; i < target.myTasks.Count; i++)
                         {
@@ -869,9 +879,9 @@ namespace TownOfUs
 
         public static void Convert(PlayerControl player)
         {
-            if (PlayerControl.LocalPlayer == player) ShowAnimatedFlash(Patches.Colors.Impostor);
+            if (PlayerControl.LocalPlayer == player) Coroutines.Start(Utils.FlashCoroutine(Patches.Colors.Impostor));
             if (PlayerControl.LocalPlayer != player && PlayerControl.LocalPlayer.Is(RoleEnum.CultistMystic)
-                && !PlayerControl.LocalPlayer.Data.IsDead) ShowAnimatedFlash(Patches.Colors.Impostor);
+                && !PlayerControl.LocalPlayer.Data.IsDead) Coroutines.Start(Utils.FlashCoroutine(Patches.Colors.Impostor));
 
             if (PlayerControl.LocalPlayer.Is(RoleEnum.Transporter) && PlayerControl.LocalPlayer == player)
             {
@@ -1018,27 +1028,6 @@ namespace TownOfUs
                     player2.nameText().color = Patches.Colors.Impostor;
                 }
             }
-        }
-
-        public static void ShowAnimatedFlash(Color color, float duration = 1f)
-        {
-            if (DestroyableSingleton<HudManager>.Instance == null || DestroyableSingleton<HudManager>.Instance.FullScreen == null) return;
-            DestroyableSingleton<HudManager>.Instance.FullScreen.gameObject.SetActive(true);
-            DestroyableSingleton<HudManager>.Instance.FullScreen.enabled = true;
-            DestroyableSingleton<HudManager>.Instance.StartCoroutine(Effects.Lerp(duration, new Action<float>((p) => {
-                var renderer = DestroyableSingleton<HudManager>.Instance.FullScreen;
-                if (p < 0.5)
-                {
-                    if (renderer != null)
-                        renderer.color = new Color(color.r, color.g, color.b, Mathf.Clamp01(p * 2 * 0.75f));
-                }
-                else
-                {
-                    if (renderer != null)
-                        renderer.color = new Color(color.r, color.g, color.b, Mathf.Clamp01((1 - p) * 2 * 0.75f));
-                }
-                if (p == 1f && renderer != null) renderer.enabled = false;
-            })));
         }
 
         public static IEnumerator FlashCoroutine(Color color, float waitfor = 1f, float alpha = 0.3f)
@@ -1199,14 +1188,17 @@ namespace TownOfUs
       
         [HarmonyPatch(typeof(PlayerControl), nameof(PlayerControl.StartMeeting))]
         class StartMeetingPatch {
-            public static void Prefix(PlayerControl __instance, [HarmonyArgument(0)]GameData.PlayerInfo meetingTarget) {
+            public static void Prefix(PlayerControl __instance, [HarmonyArgument(0)]NetworkedPlayerInfo meetingTarget) {
                 voteTarget = meetingTarget;
 
                 // Close In-Game Settings Display if open
-                CustomOption.Patches.HudManagerUpdate.CloseSettings();
+                CustomOption.HudManagerUpdate.CloseSettings();
 
                 // Reset zoomed out ghosts
                 toggleZoom(reset: true);
+                
+                // Stop all playing sounds
+                SoundEffectsManager.stopAll();
             }
         }
 
@@ -1572,7 +1564,7 @@ namespace TownOfUs
             [HarmonyPatch(typeof(MapBehaviour), nameof(MapBehaviour.FixedUpdate))]
             static void Postfix(MapBehaviour __instance) {
                 // Close In-Game Settings Display on map open
-                CustomOption.Patches.HudManagerUpdate.CloseSettings();
+                CustomOption.HudManagerUpdate.CloseSettings();
             }
         }
 
@@ -1588,9 +1580,10 @@ namespace TownOfUs
 
             var tzGO = GameObject.Find("TOGGLEZOOMBUTTON");
             if (tzGO != null) {
-                SpriteRenderer rend = tzGO.GetComponent<SpriteRenderer>();
-                rend.sprite = zoomOutStatus ? loadSpriteFromResources("TownOfUs.Resources.PlusButton.png", 175f) : loadSpriteFromResources("TownOfUs.Resources.MinusButton.png", 175f);
-                tzGO.transform.localPosition = zoomOutStatus ? HudManager.Instance.UseButton.transform.localPosition + new Vector3(0f, 3f, 0) : HudManager.Instance.UseButton.transform.localPosition + new Vector3(0.4f, 2.8f, 0);
+                var rend = tzGO.transform.Find("Inactive").GetComponent<SpriteRenderer>();
+                var rendActive = tzGO.transform.Find("Active").GetComponent<SpriteRenderer>();
+                rend.sprite = zoomOutStatus ? Utils.loadSpriteFromResources("TownOfUs.Resources.Plus_Button.png", 100f) : Utils.loadSpriteFromResources("TownOfUs.Resources.Minus_Button.png", 100f);
+                rendActive.sprite = zoomOutStatus ? Utils.loadSpriteFromResources("TownOfUs.Resources.Plus_ButtonActive.png", 100f) : Utils.loadSpriteFromResources("TownOfUs.Resources.Minus_ButtonActive.png", 100f);
             }
             ResolutionManager.ResolutionChanged.Invoke((float)Screen.width / Screen.height, Screen.width, Screen.height, Screen.fullScreen); // This will move button positions to the correct position.
         }
@@ -1627,6 +1620,20 @@ namespace TownOfUs
                 return texture;
             } catch {
                 System.Console.WriteLine("Error loading texture from resources: " + path);
+            }
+            return null;
+        }
+
+        public static Texture2D loadTextureFromDisk(string path) {
+            try {          
+                if (File.Exists(path))     {
+                    Texture2D texture = new Texture2D(2, 2, TextureFormat.ARGB32, true);
+                    var byteTexture = Il2CppSystem.IO.File.ReadAllBytes(path);
+                    ImageConversion.LoadImage(texture, byteTexture, false);
+                    return texture;
+                }
+            } catch {
+                System.Console.WriteLine("Error loading texture from disk: " + path);
             }
             return null;
         }
@@ -1703,6 +1710,7 @@ namespace TownOfUs
 
         public static bool HasTask(params TaskTypes[] types)
         {
+            if (AmongUsClient.Instance.GameState != InnerNetClient.GameStates.Started) return false;
             return PlayerControl.LocalPlayer.myTasks.ToArray().Any(x => types.ToList().Contains(x.TaskType));
         }
 
@@ -1731,6 +1739,202 @@ namespace TownOfUs
             if (Role.GetRoles(RoleEnum.Doomsayer).Any(x => ((Doomsayer)x).WonByGuessing)) return true;
             if (Role.GetRoles(RoleEnum.Scavenger).Any(x => ((Scavenger)x).WonByDevouring)) return true;
             return false;
+        }
+
+        public static void HandleShareOptions(byte numberOfOptions, MessageReader reader) {            
+            try {
+                for (int i = 0; i < numberOfOptions; i++) {
+                    uint optionId = reader.ReadPackedUInt32();
+                    uint selection = reader.ReadPackedUInt32();
+                    CustomOption.CustomOption option = CustomOption.CustomOption.options.First(option => option.id == (int)optionId);
+                    option.updateSelection((int)selection, i == numberOfOptions - 1);
+                }
+            } catch (Exception e) {
+                TownOfUs.Logger.LogError("Error while deserializing options: " + e.Message);
+            }
+        }
+
+        public static bool isLighterColor(int colorId) {
+            return CustomColors.lighterColors.Contains(colorId);
+        }
+
+        public static bool LoversExisting()
+        {
+            bool existing = false;
+            foreach (var modifier in Modifier.GetModifiers(ModifierEnum.Lover))
+            {
+                var lover = (Lover)modifier;
+                existing = lover.Player != null && lover.OtherLover.Player != null && !lover.Player.Data.Disconnected && !lover.OtherLover.Player.Data.Disconnected; 
+            }
+            return existing;
+        }
+
+        public static bool LoversExistingAndAlive()
+        {
+            bool existing = false;
+            foreach (var modifier in Modifier.GetModifiers(ModifierEnum.Lover))
+            {
+                var lover = (Lover)modifier;
+                existing = LoversExisting() && !lover.Player.Data.IsDead && !lover.OtherLover.Player.Data.IsDead;
+            }
+            return existing;
+        }
+
+        public static bool LoversExistingWithKiller()
+        {
+            bool existing = false;
+            foreach (var modifier in Modifier.GetModifiers(ModifierEnum.Lover))
+            {
+                var lover = (Lover)modifier;
+                existing = LoversExisting() && (lover.Player.Is(Faction.Impostors) || lover.Player.Is(Faction.NeutralKilling) || lover.OtherLover.Player.Is(Faction.Impostors) || lover.OtherLover.Player.Is(Faction.NeutralKilling));
+            }
+            return existing;
+        }
+
+        public static bool hasAliveKillingLover(this PlayerControl player)
+        {
+            bool existing = false;
+            if (!LoversExistingAndAlive() || !LoversExistingWithKiller())
+                existing = false;
+            foreach (var modifier in Modifier.GetModifiers(ModifierEnum.Lover))
+            {
+                var lover = (Lover)modifier;
+                existing = lover.Player != null && (player == lover.Player || player == lover.OtherLover.Player);
+            }
+            return existing;
+        }
+
+        public static bool isSomeOneBlockGameEndForImps() {
+            bool blockGameEnd = false;
+            foreach (var role in Role.GetRoles(RoleEnum.Sheriff))
+            {
+                var sheriff = (Sheriff)role;
+                if (sheriff.Player != null && !sheriff.Player.Data.IsDead && !sheriff.Player.Data.Disconnected)
+                {
+                    blockGameEnd = true;
+                }
+            }
+            foreach (var role in Role.GetRoles(RoleEnum.Veteran))
+            {
+                var veteran = (Veteran)role;
+                if (veteran.Player != null && !veteran.Player.Data.IsDead && !veteran.Player.Data.Disconnected)
+                {
+                    blockGameEnd = true;
+                }
+            }
+            foreach (var role in Role.GetRoles(RoleEnum.Vigilante))
+            {
+                var vigilante = (Vigilante)role;
+                if (vigilante.Player != null && !vigilante.Player.Data.IsDead && !vigilante.Player.Data.Disconnected)
+                {
+                    blockGameEnd = true;
+                }
+            }
+            foreach (var role in Role.GetRoles(RoleEnum.Mayor))
+            {
+                var mayor = (Mayor)role;
+                if (mayor.Player != null && !mayor.Player.Data.IsDead && !mayor.Player.Data.Disconnected && mayor.Revealed)
+                {
+                    blockGameEnd = true;
+                }
+            }
+            return blockGameEnd;
+        }
+
+        public static bool isSomeOneBlockGameEndForNonImps() {
+            bool blockGameEnd = false;
+            if (SetTraitor.WillBeTraitor != null && !SetTraitor.WillBeTraitor.Data.IsDead && !SetTraitor.WillBeTraitor.Data.Disconnected)
+            {
+                blockGameEnd = true;
+            }
+            foreach (var role in Role.GetRoles(RoleEnum.Sheriff))
+            {
+                var sheriff = (Sheriff)role;
+                if (sheriff.Player != null && !sheriff.Player.Data.IsDead && !sheriff.Player.Data.Disconnected)
+                {
+                    blockGameEnd = true;
+                }
+            }
+            foreach (var role in Role.GetRoles(RoleEnum.Veteran))
+            {
+                var veteran = (Veteran)role;
+                if (veteran.Player != null && !veteran.Player.Data.IsDead && !veteran.Player.Data.Disconnected)
+                {
+                    blockGameEnd = true;
+                }
+            }
+            foreach (var role in Role.GetRoles(RoleEnum.Vigilante))
+            {
+                var vigilante = (Vigilante)role;
+                if (vigilante.Player != null && !vigilante.Player.Data.IsDead && !vigilante.Player.Data.Disconnected)
+                {
+                    blockGameEnd = true;
+                }
+            }
+            foreach (var role in Role.GetRoles(RoleEnum.Mayor))
+            {
+                var mayor = (Mayor)role;
+                if (mayor.Player != null && !mayor.Player.Data.IsDead && !mayor.Player.Data.Disconnected && mayor.Revealed)
+                {
+                    blockGameEnd = true;
+                }
+            }
+            return blockGameEnd;
+        }
+
+        public static bool isSomeOneBlockGameEndForCrew() {
+            bool blockGameEnd = false;
+            if (SetTraitor.WillBeTraitor != null && !SetTraitor.WillBeTraitor.Data.IsDead && !SetTraitor.WillBeTraitor.Data.Disconnected)
+            {
+                blockGameEnd = true;
+            }
+            return blockGameEnd;
+        }
+
+        public static bool isVHBlockGameEndForVampires() {
+            bool blockGameEnd = false;
+            if (SetTraitor.WillBeTraitor != null && !SetTraitor.WillBeTraitor.Data.IsDead && !SetTraitor.WillBeTraitor.Data.Disconnected)
+            {
+                blockGameEnd = true;
+            }
+            foreach (var role in Role.GetRoles(RoleEnum.VampireHunter))
+            {
+                var vampireHunter = (VampireHunter)role;
+                if (vampireHunter.Player != null && !vampireHunter.Player.Data.IsDead && !vampireHunter.Player.Data.Disconnected)
+                {
+                    blockGameEnd = true;
+                }
+            }
+            return blockGameEnd;
+        }
+
+        public static bool hasFakeTasks(this PlayerControl player) {
+            return !player.Is(Faction.Crewmates);
+        }
+
+        public static AudioClip loadAudioClipFromResources(string path, string clipName = "UNNAMED_TOR_AUDIO_CLIP") {
+            // must be "raw (headerless) 2-channel signed 32 bit pcm (le)" (can e.g. use Audacity® to export)
+            try {
+                Assembly assembly = Assembly.GetExecutingAssembly();
+                Stream stream = assembly.GetManifestResourceStream(path);
+                var byteAudio = new byte[stream.Length];
+                _ = stream.Read(byteAudio, 0, (int)stream.Length);
+                float[] samples = new float[byteAudio.Length / 4]; // 4 bytes per sample
+                int offset;
+                for (int i = 0; i < samples.Length; i++) {
+                    offset = i * 4;
+                    samples[i] = (float)BitConverter.ToInt32(byteAudio, offset) / Int32.MaxValue;
+                }
+                int channels = 2;
+                int sampleRate = 48000;
+                AudioClip audioClip = AudioClip.Create(clipName, samples.Length / 2, channels, sampleRate, false);
+                audioClip.hideFlags |= HideFlags.HideAndDontSave | HideFlags.DontSaveInEditor;
+                audioClip.SetData(samples, 0);
+                return audioClip;
+            } catch {
+                System.Console.WriteLine("Error loading AudioClip from resources: " + path);
+            }
+            return null;
         }
     }
 }

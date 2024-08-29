@@ -78,51 +78,5 @@ namespace TownOfUs.Roles.Modifiers
             lover1.OtherLover = lover2;
             lover2.OtherLover = lover1;
         }
-
-        internal override bool ModifierWin(LogicGameFlowNormal __instance)
-        {
-            if (FourPeopleLeft()) return false;
-
-            if (CheckLoversWin())
-            {
-                Utils.Rpc(CustomRPC.LoveWin, Player.PlayerId);
-                Win();
-                Utils.EndGame();
-                return false;
-            }
-
-            return true;
-        }
-
-        private bool FourPeopleLeft()
-        {
-            var players = PlayerControl.AllPlayerControls.ToArray();
-            var alives = players.Where(x => !x.Data.IsDead).ToList();
-            var lover1 = Player;
-            var lover2 = OtherLover.Player;
-            {
-                return !lover1.Data.IsDead && !lover1.Data.Disconnected && !lover2.Data.IsDead && !lover2.Data.Disconnected &&
-                       alives.Count() == 4 && (lover1.Is(Faction.Impostors) || lover2.Is(Faction.Impostors));
-            }
-        }
-
-        private bool CheckLoversWin()
-        {
-            //System.Console.WriteLine("CHECKWIN");
-            var players = PlayerControl.AllPlayerControls.ToArray();
-            var alives = players.Where(x => !x.Data.IsDead).ToList();
-            var lover1 = Player;
-            var lover2 = OtherLover.Player;
-
-            return !lover1.Data.IsDead && !lover1.Data.Disconnected && !lover2.Data.IsDead && !lover2.Data.Disconnected &&
-                   (alives.Count == 3) | (alives.Count == 2);
-        }
-
-        public void Win()
-        {
-            if (CustomGameOptions.NeutralEvilWinEndsGame && Role.AllRoles.Where(x => x.RoleType == RoleEnum.Jester).Any(x => ((Jester) x).VotedOut)) return;
-            LoveCoupleWins = true;
-            OtherLover.LoveCoupleWins = true;
-        }
     }
 }

@@ -40,7 +40,7 @@ namespace TownOfUs.CrewmateRoles.MediumMod
                         player.Visible = true;
                         if (!CustomGameOptions.ShowMediatePlayer)
                         {
-                            player.SetOutfit(CustomPlayerOutfitType.Camouflage, new GameData.PlayerOutfit()
+                            player.SetOutfit(CustomPlayerOutfitType.Camouflage, new NetworkedPlayerInfo.PlayerOutfit()
                             {
                                 ColorId = player.GetDefaultOutfit().ColorId,
                                 HatId = "",

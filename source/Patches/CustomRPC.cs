@@ -19,19 +19,6 @@ namespace TownOfUs
         SetTraitor,
         TraitorSpawn,
 
-        LoveWin,
-        GlitchWin,
-        JuggernautWin,
-        ArsonistWin,
-        PhantomWin,
-        NobodyWins,
-        PlaguebearerWin,
-        PestilenceWin,
-        WerewolfWin,
-        SurvivorOnlyWin,
-        MercenaryOnlyWin,
-        VampireWin,
-
         JanitorClean,
         FixLights,
         EngineerFix,
@@ -99,7 +86,7 @@ namespace TownOfUs
         GAToSurv,
 
         Start,
-        SyncCustomSettings,
+        ShareOptions,
         FixAnimation,
         SetPos,
         SetSettings,

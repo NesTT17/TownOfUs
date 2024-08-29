@@ -82,13 +82,6 @@ namespace TownOfUs.Roles
             LastArmored = DateTime.UtcNow;
         }
 
-        protected override void IntroPrefix(IntroCutscene._ShowTeam_d__38 __instance)
-        {
-            var mercTeam = new Il2CppSystem.Collections.Generic.List<PlayerControl>();
-            mercTeam.Add(PlayerControl.LocalPlayer);
-            __instance.teamToShow = mercTeam;
-        }
-
         public PlayerControl ClosestPlayer;
         public bool UsedAbility { get; set; } = false;
         public PlayerControl ShieldedPlayer { get; set; }

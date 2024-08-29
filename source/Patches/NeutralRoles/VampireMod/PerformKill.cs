@@ -84,6 +84,7 @@ namespace TownOfUs.NeutralRoles.VampireMod
                 {
                     Convert(role.ClosestPlayer);
                     Utils.Rpc(CustomRPC.Bite, role.ClosestPlayer.PlayerId);
+                    SoundEffectsManager.play("vampireBite");
                 }
                 if (interact[0] == true)
                 {

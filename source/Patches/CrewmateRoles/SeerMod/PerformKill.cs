@@ -28,6 +28,7 @@ namespace TownOfUs.CrewmateRoles.SeerMod
             if (interact[4] == true)
             {
                 role.Investigated.Add(role.ClosestPlayer.PlayerId);
+                SoundEffectsManager.play("seerReveal");
             }
             if (interact[0] == true)
             {

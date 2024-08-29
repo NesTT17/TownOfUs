@@ -54,7 +54,6 @@ namespace TownOfUs.CrewmateRoles.SheriffMod
                 Hunter hunter = (Hunter)hunterRole;
                 hunter.CatchPlayer(role.Player);
             }
-            if (role.ClosestPlayer.IsOnAlert())
             if (role.ClosestPlayer.IsCampaigned() || role.Player.IsCampaigned())
             {
                 foreach (var pn in Role.GetRoles(RoleEnum.Politician)) ((Politician)pn).RpcSpreadCampaign(role.ClosestPlayer, role.Player);

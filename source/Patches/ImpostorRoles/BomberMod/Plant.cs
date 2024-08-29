@@ -44,6 +44,7 @@ namespace TownOfUs.ImpostorRoles.BomberMod
                     else PlayerControl.LocalPlayer.SetKillTimer(GameOptionsManager.Instance.currentNormalGameOptions.KillCooldown + CustomGameOptions.DetonateDelay);
                     DestroyableSingleton<HudManager>.Instance.KillButton.SetTarget(null);
                     role.Bomb = BombExtentions.CreateBomb(pos);
+                    SoundEffectsManager.play("bomberPlant");
                     return false;
                 }
                 else return false;

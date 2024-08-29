@@ -41,11 +41,7 @@ namespace TownOfUs.CrewmateRoles.TrackerMod
 
                 if (!CamouflageUnCamouflage.IsCamoed)
                 {
-                    if (RainbowUtils.IsRainbow(player.GetDefaultOutfit().ColorId))
-                    {
-                        arrow.Value.image.color = RainbowUtils.Rainbow;
-                    }
-                    else if (CamoedLastTick)
+                    if (CamoedLastTick)
                     {
                         arrow.Value.image.color = Palette.PlayerColors[player.GetDefaultOutfit().ColorId];
                     }

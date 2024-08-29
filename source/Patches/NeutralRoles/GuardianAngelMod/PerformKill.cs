@@ -24,6 +24,7 @@ namespace TownOfUs.NeutralRoles.GuardianAngelMod
                 role.UsesLeft--;
                 role.Protect();
                 Utils.Rpc(CustomRPC.GAProtect, PlayerControl.LocalPlayer.PlayerId);
+                SoundEffectsManager.play("gaProtect");
                 return false;
             }
 

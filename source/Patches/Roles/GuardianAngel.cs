@@ -67,13 +67,5 @@ namespace TownOfUs.Roles
             Enabled = false;
             LastProtected = DateTime.UtcNow;
         }
-
-        protected override void IntroPrefix(IntroCutscene._ShowTeam_d__38 __instance)
-        {
-            var gaTeam = new Il2CppSystem.Collections.Generic.List<PlayerControl>();
-            gaTeam.Add(PlayerControl.LocalPlayer);
-            gaTeam.Add(target);
-            __instance.teamToShow = gaTeam;
-        }
     }
 }

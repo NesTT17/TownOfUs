@@ -11,14 +11,18 @@ namespace TownOfUs.NeutralRoles.MercenaryMod
     {
         public static void BreakShield(byte mercId, byte playerId)
         {
-            if (CustomGameOptions.NotificationMercShield == NotificationOptions.Everyone)
-                Utils.ShowAnimatedFlash(new Color(0f, 0.5f, 0f, 1f));
-            else if (PlayerControl.LocalPlayer.PlayerId == playerId &&
-                (CustomGameOptions.NotificationMercShield == NotificationOptions.Shielded || CustomGameOptions.NotificationMercShield == NotificationOptions.MercAndShielded))
-                Utils.ShowAnimatedFlash(new Color(0f, 0.5f, 0f, 1f));
-            else if (PlayerControl.LocalPlayer.PlayerId == mercId &&
-                (CustomGameOptions.NotificationMercShield == NotificationOptions.Mercenary || CustomGameOptions.NotificationMercShield == NotificationOptions.MercAndShielded))
-                Utils.ShowAnimatedFlash(new Color(0f, 0.5f, 0f, 1f));
+            if (CustomGameOptions.NotificationMercShield == NotificationOptions.Everyone) {
+                Coroutines.Start(Utils.FlashCoroutine(new Color(0f, 0.5f, 0f, 1f)));
+                SoundEffectsManager.play("shieldMurderAttempt");
+            }
+            else if (PlayerControl.LocalPlayer.PlayerId == playerId && (CustomGameOptions.NotificationMercShield == NotificationOptions.Shielded || CustomGameOptions.NotificationMercShield == NotificationOptions.MercAndShielded)) {
+                Coroutines.Start(Utils.FlashCoroutine(new Color(0f, 0.5f, 0f, 1f)));
+                SoundEffectsManager.play("shieldMurderAttempt");
+            }
+            else if (PlayerControl.LocalPlayer.PlayerId == mercId && (CustomGameOptions.NotificationMercShield == NotificationOptions.Mercenary || CustomGameOptions.NotificationMercShield == NotificationOptions.MercAndShielded)) {
+                Coroutines.Start(Utils.FlashCoroutine(new Color(0f, 0.5f, 0f, 1f)));
+                SoundEffectsManager.play("shieldMurderAttempt");
+            }
 
             var player = Utils.PlayerById(playerId);
             foreach (var role in Role.GetRoles(RoleEnum.Mercenary))
@@ -29,7 +33,6 @@ namespace TownOfUs.NeutralRoles.MercenaryMod
                     merc.exShielded = player;
                     merc.Brilders += 1;
                     merc.RegenTask();
-                    System.Console.WriteLine(player.name + " Is Ex-Shielded");
                 }
 
             player.myRend().material.SetColor("_VisorColor", Palette.VisorColor);

@@ -23,6 +23,7 @@ namespace TownOfUs.NeutralRoles.PlaguebearerMod
             var flag3 = distBetweenPlayers <
                         GameOptionsData.KillDistances[GameOptionsManager.Instance.currentNormalGameOptions.KillDistance];
             if (!flag3) return false;
+            
             var interact = Utils.Interact(PlayerControl.LocalPlayer, role.ClosestPlayer);
             if (interact[0] == true)
             {

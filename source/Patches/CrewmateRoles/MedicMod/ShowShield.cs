@@ -35,7 +35,6 @@ namespace TownOfUs.CrewmateRoles.MedicMod
                 var exPlayer = medic.exShielded;
                 if (exPlayer != null)
                 {
-                    System.Console.WriteLine(exPlayer.name + " is ex-Shielded and unvisored");
                     exPlayer.myRend().material.SetColor("_VisorColor", Palette.VisorColor);
                     exPlayer.myRend().material.SetFloat("_Outline", 0f);
                     medic.exShielded = null;

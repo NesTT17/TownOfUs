@@ -23,6 +23,7 @@ namespace TownOfUs.CrewmateRoles.EngineerMod
             if (!sabActive) return false;
             role.UsesLeft -= 1;
             Utils.Rpc(CustomRPC.EngineerFix, PlayerControl.LocalPlayer.NetId);
+            SoundEffectsManager.play("engineerRepair");
             switch (GameOptionsManager.Instance.currentNormalGameOptions.MapId)
             {
                 case 0:

@@ -161,7 +161,7 @@ namespace TownOfUs.NeutralRoles.DoomsayerMod
                 else
                 {
                     ShowHideButtonsDoom.HideButtonsDoom(role);
-                    Utils.ShowAnimatedFlash(Color.red);
+                    Coroutines.Start(Utils.FlashCoroutine(Color.red));
                 }
             }
 

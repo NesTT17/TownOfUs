@@ -12,10 +12,8 @@ using Reactor.Utilities.Extensions;
 using Reactor.Networking.Attributes;
 using TownOfUs.CustomOption;
 using TownOfUs.Patches;
-using TownOfUs.RainbowMod;
 using TownOfUs.Extensions;
 using Il2CppInterop.Runtime;
-using Il2CppInterop.Runtime.Injection;
 using Il2CppInterop.Runtime.InteropTypes.Arrays;
 using UnityEngine;
 using UnityEngine.SceneManagement;
@@ -31,7 +29,7 @@ namespace TownOfUs
     public class TownOfUs : BasePlugin
     {
         public const string Id = "com.nestt.townofus";
-        public const string VersionString = "5.0.4.3";
+        public const string VersionString = "5.1.0";
         public static System.Version Version = System.Version.Parse(VersionString);
 
         public static AssetLoader bundledAssets;
@@ -107,11 +105,6 @@ namespace TownOfUs
         public static Sprite BodyguardSprite;
         public static Sprite DevourSprite;
 
-        public static Sprite SettingsButtonSprite;
-        public static Sprite CrewSettingsButtonSprite;
-        public static Sprite NeutralSettingsButtonSprite;
-        public static Sprite ImposterSettingsButtonSprite;
-        public static Sprite ModifierSettingsButtonSprite;
         public static Sprite ToUBanner;
         public static Sprite UpdateTOUButton;
         public static Sprite UpdateSubmergedButton;
@@ -120,22 +113,25 @@ namespace TownOfUs
 
         private static DLoadImage _iCallLoadImage;
 
+        public static int optionsPage = 2;
 
         private Harmony _harmony;
+        public static TownOfUs Instance;
+        internal static BepInEx.Logging.ManualLogSource Logger;
 
         public ConfigEntry<string> Ip { get; set; }
-
         public ConfigEntry<ushort> Port { get; set; }
+        
         public static string RuntimeLocation;
         public override void Load()
         {
             RuntimeLocation = Path.GetDirectoryName(Assembly.GetAssembly(typeof(TownOfUs)).Location);
-
-            System.Console.WriteLine("000.000.000.000/000000000000000000");
+            Logger = Log;
+            Instance = this;
 
             _harmony = new Harmony("com.slushiegoose.townofus");
 
-            Generate.GenerateAll();
+            CustomOptionHolder.Load();
 
             bundledAssets = new();
 
@@ -210,19 +206,12 @@ namespace TownOfUs
             BodyguardSprite = CreateSprite("TownOfUs.Resources.Bodyguard.png");
             DevourSprite = CreateSprite("TownOfUs.Resources.Devour.png");
 
-            SettingsButtonSprite = CreateSprite("TownOfUs.Resources.SettingsButton.png");
-            CrewSettingsButtonSprite = CreateSprite("TownOfUs.Resources.Crewmate.png");
-            NeutralSettingsButtonSprite = CreateSprite("TownOfUs.Resources.Neutral.png");
-            ImposterSettingsButtonSprite = CreateSprite("TownOfUs.Resources.Impostor.png");
-            ModifierSettingsButtonSprite = CreateSprite("TownOfUs.Resources.Modifiers.png");
             ToUBanner = CreateSprite("TownOfUs.Resources.TownOfUsBanner.png");
             UpdateTOUButton = CreateSprite("TownOfUs.Resources.UpdateToUButton.png");
             UpdateSubmergedButton = CreateSprite("TownOfUs.Resources.UpdateSubmergedButton.png");
 
-            PalettePatch.Load();
-            ClassInjector.RegisterTypeInIl2Cpp<RainbowBehaviour>();
-
-            // RegisterInIl2CppAttribute.Register();
+            CustomColors.Load();
+            CustomHats.CustomHatManager.LoadHats();
 
             Ip = Config.Bind("Custom", "Ipv4 or Hostname", "127.0.0.1");
             Port = Config.Bind("Custom", "Port", (ushort) 22023);
@@ -247,6 +236,7 @@ namespace TownOfUs
 
             _harmony.PatchAll();
             SubmergedCompatibility.Initialize();
+            AddComponent<ModUpdater>();
         }
 
         public static Sprite CreateSprite(string name, float ppU = 100f)

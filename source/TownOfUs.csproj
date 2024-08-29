@@ -1,31 +1,32 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 	<PropertyGroup>
 		<TargetFramework>net6.0</TargetFramework>
-		<Version>5.0.4.3</Version>
-		<DebugType>embedded</DebugType>
+		<Version>5.1.0</Version>
+        <Description>TownOfUs</Description>
+        <Authors>NesTT</Authors>
 		<LangVersion>latest</LangVersion>
         <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
-	</PropertyGroup>
-
-	<PropertyGroup>
-		<GamePlatform Condition="'$(GamePlatform)' == ''">Steam</GamePlatform>
-		<GameVersion Condition="'$(GamePlatform)' == 'Steam'">2024.3.5</GameVersion>
-		<GameVersion Condition="'$(GamePlatform)' == 'Itch'">2024.3.5</GameVersion>
-
-    <CopyLocalLockFileAssemblies>true</CopyLocalLockFileAssemblies>
+        <RestorePackagesWithLockFile>true</RestorePackagesWithLockFile>
+        <PlatformTarget>AnyCPU</PlatformTarget>
+        <CopyLocalLockFileAssemblies>true</CopyLocalLockFileAssemblies>
+        <Platforms>AnyCPU</Platforms>
 	</PropertyGroup>
 
 	<ItemGroup>
-		<PackageReference Include="Reactor" Version="2.2.0" />
-		<PackageReference Include="BepInEx.Unity.IL2CPP" Version="6.0.0-be.688" />
-		<PackageReference Include="AmongUs.GameLibs.$(GamePlatform)" Version="$(GameVersion)" PrivateAssets="all" />
-		<PackageReference Include="BepInEx.IL2CPP.MSBuild" Version="2.0.1" PrivateAssets="all" />
-		<PackageReference Include="System.Text.Json" Version="6.0.7" PrivateAssets="all" />
-		<PackageReference Include="Samboy063.Cpp2IL.Core" Version="2022.1.0-development.866" />
+        <EmbeddedResource Include="Resources\**" />
+
+        <PackageReference Include="Reactor" Version="2.2.0" />
+		<PackageReference Include="AmongUs.GameLibs.Steam" Version="2024.6.18" />
+		<PackageReference Include="BepInEx.IL2CPP.MSBuild" Version="2.1.0-rc.1" />
+		<PackageReference Include="BepInEx.Unity.IL2CPP" Version="6.0.0-be.692" />
+		<PackageReference Include="System.Text.Json" Version="6.0.8" />
+		<PackageReference Include="Samboy063.Cpp2IL.Core" Version="2022.1.0-development.972" />
 	</ItemGroup>
 
-	<ItemGroup>
-		<EmbeddedResource Include="Resources\*" />
-		<EmbeddedResource Include="Resources\Hats\**" />
-	</ItemGroup>
+	<Target Name="Copy" AfterTargets="Build" >
+        <Copy SourceFiles="$(TargetPath)" DestinationFolder="D:/Among Us/BepInEx/plugins/" />
+        <Copy SourceFiles="$(TargetPath)" DestinationFolder="D:/Among Us — копия/BepInEx/plugins/" />
+        <Copy SourceFiles="$(TargetPath)" DestinationFolder="D:/Among Us — копия (2)/BepInEx/plugins/" />
+        <Copy SourceFiles="$(TargetPath)" DestinationFolder="D:/Among Us — копия (3)/BepInEx/plugins/" />
+    </Target>
 </Project>

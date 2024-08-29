@@ -25,6 +25,7 @@ namespace TownOfUs.ImpostorRoles.GrenadierMod
                 Utils.Rpc(CustomRPC.FlashGrenade, PlayerControl.LocalPlayer.PlayerId);
                 role.TimeRemaining = CustomGameOptions.GrenadeDuration;
                 role.Flash();
+                SoundEffectsManager.play("grenadierFlash");
                 return false;
             }
 

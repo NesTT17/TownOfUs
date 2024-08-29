@@ -38,9 +38,10 @@ namespace TownOfUs.CrewmateRoles.InvestigatorMod
 
         public static void DestroyAll(Investigator role)
         {
-            while (role.AllPrints.Count != 0) role.AllPrints[0].Destroy();
+            while (role.AllPrints.Count != 0) {
+                role.AllPrints[0].Destroy();
+            }
         }
-
 
         private void Start()
         {
@@ -71,10 +72,8 @@ namespace TownOfUs.CrewmateRoles.InvestigatorMod
 
             if (alpha < 0 || alpha > 1)
                 alpha = 0;
-            
-            if (RainbowUtils.IsRainbow(Player.GetDefaultOutfit().ColorId) & !Grey)
-                Color = RainbowUtils.Rainbow;
-            else if (Grey)
+
+            if (Grey)
                 Color = new Color(0.2f, 0.2f, 0.2f, 1f);
             else
                 Color = Palette.PlayerColors[Player.GetDefaultOutfit().ColorId];

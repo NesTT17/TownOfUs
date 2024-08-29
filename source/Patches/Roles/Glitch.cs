@@ -61,26 +61,8 @@ namespace TownOfUs.Roles
         public PlayerControl MimicTarget { get; set; }
         public bool GlitchWins { get; set; }
 
-        internal override bool NeutralWin(LogicGameFlowNormal __instance)
-        {
-            if (Player.Data.IsDead || Player.Data.Disconnected) return true;
-
-            if (PlayerControl.AllPlayerControls.ToArray().Count(x => !x.Data.IsDead && !x.Data.Disconnected) <= 2 &&
-                    PlayerControl.AllPlayerControls.ToArray().Count(x => !x.Data.IsDead && !x.Data.Disconnected &&
-                    (x.Data.IsImpostor() || x.Is(Faction.NeutralKilling))) == 1)
-            {
-                Utils.Rpc(CustomRPC.GlitchWin, Player.PlayerId);
-                Wins();
-                Utils.EndGame();
-                return false;
-            }
-
-            return false;
-        }
-
         public void Wins()
         {
-            //System.Console.WriteLine("Reached Here - Glitch Edition");
             GlitchWins = true;
         }
 
@@ -93,13 +75,6 @@ namespace TownOfUs.Roles
             MimicList = null;
             HighlightedPlayer = null;
             PlayerIndex = 0;
-        }
-
-        protected override void IntroPrefix(IntroCutscene._ShowTeam_d__38 __instance)
-        {
-            var glitchTeam = new Il2CppSystem.Collections.Generic.List<PlayerControl>();
-            glitchTeam.Add(PlayerControl.LocalPlayer);
-            __instance.teamToShow = glitchTeam;
         }
 
         public void Update(HudManager __instance)
@@ -437,8 +412,8 @@ namespace TownOfUs.Roles
             public static IEnumerator Mimic(Glitch __instance, PlayerControl mimicPlayer)
             {
                 Utils.Rpc(CustomRPC.SetMimic, PlayerControl.LocalPlayer.PlayerId, mimicPlayer.PlayerId);
-
                 Utils.Morph(__instance.Player, mimicPlayer, true);
+                SoundEffectsManager.play("morphlingMorph");
 
                 var mimicActivation = DateTime.UtcNow;
                 var mimicText = new GameObject("_Player").AddComponent<ImportantTextTask>();
@@ -463,7 +438,6 @@ namespace TownOfUs.Roles
                         AmongUsClient.Instance.GameState == InnerNetClient.GameStates.Ended || Utils.HasTask(TaskTypes.MushroomMixupSabotage))
                     {
                         PlayerControl.LocalPlayer.myTasks.Remove(mimicText);
-                        //System.Console.WriteLine("Unsetting mimic");
                         __instance.LastMimic = DateTime.UtcNow;
                         __instance.IsUsingMimic = false;
                         __instance.MimicTarget = null;
@@ -474,6 +448,7 @@ namespace TownOfUs.Roles
                     }
 
                     Utils.Morph(__instance.Player, mimicPlayer);
+                    SoundEffectsManager.play("morphlingMorph");
                     __instance.MimicButton.SetCoolDown(CustomGameOptions.MimicDuration - (float)totalMimickTime,
                         CustomGameOptions.MimicDuration);
 
@@ -599,6 +574,7 @@ namespace TownOfUs.Roles
                     if (interact[4])
                     {
                         __gInstance.RpcSetHacked(__gInstance.HackTarget);
+                        SoundEffectsManager.play("glitchHack");
                     }
                     if (interact[0])
                     {

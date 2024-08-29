@@ -52,6 +52,7 @@ namespace TownOfUs.NeutralRoles.AmnesiacMod
             Utils.Rpc(CustomRPC.Remember, PlayerControl.LocalPlayer.PlayerId, playerId);
 
             Remember(role, player);
+            SoundEffectsManager.play("amnesiacRemember");
             return false;
         }
 

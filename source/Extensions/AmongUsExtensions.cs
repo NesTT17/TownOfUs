@@ -67,23 +67,23 @@ namespace TownOfUs.Extensions
             else
                 return player.GetDefaultAppearance();
         }
-        public static bool IsImpostor(this GameData.PlayerInfo playerinfo)
+        public static bool IsImpostor(this NetworkedPlayerInfo playerinfo)
         {
             return playerinfo?.Role?.TeamType == RoleTeamTypes.Impostor;
         }
 
-        public static void SetImpostor(this GameData.PlayerInfo playerinfo, bool impostor)
+        public static void SetImpostor(this NetworkedPlayerInfo playerinfo, bool impostor)
         {
             if (playerinfo.Role != null)
                 playerinfo.Role.TeamType = impostor ? RoleTeamTypes.Impostor : RoleTeamTypes.Crewmate;
         }
 
-        public static GameData.PlayerOutfit GetDefaultOutfit(this PlayerControl playerControl)
+        public static NetworkedPlayerInfo.PlayerOutfit GetDefaultOutfit(this PlayerControl playerControl)
         {
             return playerControl.Data.DefaultOutfit;
         }
 
-        public static void SetOutfit(this PlayerControl playerControl, CustomPlayerOutfitType CustomOutfitType, GameData.PlayerOutfit outfit)
+        public static void SetOutfit(this PlayerControl playerControl, CustomPlayerOutfitType CustomOutfitType, NetworkedPlayerInfo.PlayerOutfit outfit)
         {
             playerControl.Data.SetOutfit((PlayerOutfitType)CustomOutfitType, outfit);
             playerControl.SetOutfit(CustomOutfitType);
@@ -111,6 +111,12 @@ namespace TownOfUs.Extensions
         public static CustomPlayerOutfitType GetCustomOutfitType(this PlayerControl playerControl)
         {
             return (CustomPlayerOutfitType)playerControl.CurrentOutfitType;
+        }
+
+        // Add a method to calculate weighted role probabilities based on the session's role history.
+        public static Dictionary<RoleEnum, float> CalculateWeightedRoleProbabilities(PlayerControl player) {
+            // Placeholder for actual implementation
+            return new Dictionary<RoleEnum, float>();
         }
 
         public static bool IsNullOrDestroyed(this System.Object obj)

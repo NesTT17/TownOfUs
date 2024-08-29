@@ -40,34 +40,11 @@ namespace TownOfUs.Roles
             }
         }
 
-        internal override bool NeutralWin(LogicGameFlowNormal __instance)
-        {
-            if (Player.Data.IsDead || Player.Data.Disconnected) return true;
-
-            if (PlayerControl.AllPlayerControls.ToArray().Count(x => !x.Data.IsDead && !x.Data.Disconnected) <= 2 &&
-                    PlayerControl.AllPlayerControls.ToArray().Count(x => !x.Data.IsDead && !x.Data.Disconnected &&
-                    (x.Data.IsImpostor() || x.Is(Faction.NeutralKilling))) == 1)
-            {
-                Utils.Rpc(CustomRPC.WerewolfWin, Player.PlayerId);
-                Wins();
-                Utils.EndGame();
-                return false;
-            }
-
-            return false;
-        }
-
         public void Wins()
         {
             WerewolfWins = true;
         }
 
-        protected override void IntroPrefix(IntroCutscene._ShowTeam_d__38 __instance)
-        {
-            var werewolfTeam = new Il2CppSystem.Collections.Generic.List<PlayerControl>();
-            werewolfTeam.Add(PlayerControl.LocalPlayer);
-            __instance.teamToShow = werewolfTeam;
-        }
         public bool Rampaged => TimeRemaining > 0f;
 
         public float RampageTimer()

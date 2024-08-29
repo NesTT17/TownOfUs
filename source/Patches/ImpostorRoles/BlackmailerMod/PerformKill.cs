@@ -35,6 +35,7 @@ namespace TownOfUs.ImpostorRoles.BlackmailerMod
                     }
                     role.Blackmailed = target;
                     Utils.Rpc(CustomRPC.Blackmail, PlayerControl.LocalPlayer.PlayerId, target.PlayerId);
+                    SoundEffectsManager.play("blackmailerBlackmail");
                 }
                 else if (interact[5])
                 {

@@ -282,6 +282,10 @@ namespace TownOfUs.Roles
         {
             var TP1 = Utils.PlayerById(player1);
             var TP2 = Utils.PlayerById(player2);
+            if (PlayerControl.LocalPlayer.Is(RoleEnum.Transporter) || PlayerControl.LocalPlayer == TP1 || PlayerControl.LocalPlayer == TP2)
+            {
+                SoundEffectsManager.play("transporterTransport");
+            }
             var deadBodies = Object.FindObjectsOfType<DeadBody>();
             DeadBody Player1Body = null;
             DeadBody Player2Body = null;
@@ -389,7 +393,7 @@ namespace TownOfUs.Roles
             if (PlayerControl.LocalPlayer.PlayerId == TP1.PlayerId ||
                 PlayerControl.LocalPlayer.PlayerId == TP2.PlayerId)
             {
-                Utils.ShowAnimatedFlash(Patches.Colors.Transporter);
+                Coroutines.Start(Utils.FlashCoroutine(Patches.Colors.Transporter));
                 if (Minigame.Instance) Minigame.Instance.Close();
             }
 
@@ -455,7 +459,6 @@ namespace TownOfUs.Roles
                     {
                         Utils.Rpc(CustomRPC.AttemptSound, Player.GetMedic().Player.PlayerId, Player.PlayerId);
 
-                        System.Console.WriteLine(CustomGameOptions.ShieldBreaks + "- shield break");
                         if (CustomGameOptions.ShieldBreaks)
                             transRole.LastTransported = DateTime.UtcNow;
                         StopKill.BreakShield(Player.GetMedic().Player.PlayerId, Player.PlayerId, CustomGameOptions.ShieldBreaks);
@@ -485,7 +488,6 @@ namespace TownOfUs.Roles
                     {
                         Utils.Rpc(CustomRPC.AttemptSound, Player.GetMedic().Player.PlayerId, Player.PlayerId);
 
-                        System.Console.WriteLine(CustomGameOptions.ShieldBreaks + "- shield break");
                         if (CustomGameOptions.ShieldBreaks)
                             transRole.LastTransported = DateTime.UtcNow;
                         StopKill.BreakShield(Player.GetMedic().Player.PlayerId, Player.PlayerId, CustomGameOptions.ShieldBreaks);

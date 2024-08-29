@@ -16,9 +16,10 @@ namespace TownOfUs.CrewmateRoles.AurialMod
             if (!(role.RadiateTimer() == 0f)) return false;
             if (!__instance.enabled) return false;
             role.LastRadiated = System.DateTime.UtcNow;
+            SoundEffectsManager.play("aurialRadiate");
 
             var players = Utils.GetClosestPlayers(PlayerControl.LocalPlayer.GetTruePosition(), CustomGameOptions.RadiateRange, false);
-            foreach ( var player in players)
+            foreach (var player in players)
             {
                 if (UnityEngine.Random.Range(0, 100) > CustomGameOptions.RadiateChance) continue;
 

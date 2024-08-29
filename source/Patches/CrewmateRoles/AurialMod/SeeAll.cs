@@ -96,7 +96,7 @@ namespace TownOfUs.CrewmateRoles.AurialMod
             var fit = p.GetCustomOutfitType();
             if ((fit != CustomPlayerOutfitType.Aurial && fit != CustomPlayerOutfitType.Camouflage && fit != CustomPlayerOutfitType.Swooper) || (fit == CustomPlayerOutfitType.Aurial && p.myRend().color != c))
             {
-                p.SetOutfit(CustomPlayerOutfitType.Aurial, new GameData.PlayerOutfit()
+                p.SetOutfit(CustomPlayerOutfitType.Aurial, new NetworkedPlayerInfo.PlayerOutfit()
                 {
                     ColorId = p.GetDefaultOutfit().ColorId,
                     HatId = "",

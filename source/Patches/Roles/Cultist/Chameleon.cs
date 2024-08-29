@@ -46,7 +46,7 @@ namespace TownOfUs.Roles.Cultist
 
             if (Player.GetCustomOutfitType() != CustomPlayerOutfitType.Swooper)
             {
-                Player.SetOutfit(CustomPlayerOutfitType.Swooper, new GameData.PlayerOutfit()
+                Player.SetOutfit(CustomPlayerOutfitType.Swooper, new NetworkedPlayerInfo.PlayerOutfit()
                 {
                     ColorId = Player.CurrentOutfit.ColorId,
                     HatId = "",

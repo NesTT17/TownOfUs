@@ -61,7 +61,7 @@ namespace TownOfUs.Roles
 
             if (PlayerControl.LocalPlayer.PlayerId == escapist.PlayerId)
             {
-                Utils.ShowAnimatedFlash(new Color(0.6f, 0.1f, 0.2f, 1f));
+                Coroutines.Start(Utils.FlashCoroutine(new Color(0.6f, 0.1f, 0.2f, 1f)));
                 if (Minigame.Instance) Minigame.Instance.Close();
             }
 

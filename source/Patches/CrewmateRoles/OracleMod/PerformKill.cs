@@ -53,6 +53,7 @@ namespace TownOfUs.CrewmateRoles.OracleMod
                 else if (faction == 1) role.RevealedFaction = Faction.NeutralEvil;
                 else role.RevealedFaction = Faction.Impostors;
                 Utils.Rpc(CustomRPC.Confess, PlayerControl.LocalPlayer.PlayerId, role.Confessor.PlayerId, faction);
+                SoundEffectsManager.play("seerReveal");
             }
             if (interact[0] == true)
             {

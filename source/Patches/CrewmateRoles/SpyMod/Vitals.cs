@@ -48,7 +48,7 @@ namespace TownOfUs.CrewmateRoles.SpyMod
                     for (int R = 0; R < __instance.vitals.Length; R++)
                     {
                         VitalsPanel vitalsPanel = __instance.vitals[R];
-                        GameData.PlayerInfo player = vitalsPanel.PlayerInfo;
+                        NetworkedPlayerInfo player = vitalsPanel.PlayerInfo;
 
                         if (vitalsPanel.IsDead)
                         {

@@ -40,6 +40,7 @@ namespace TownOfUs.ImpostorRoles.MorphlingMod
                     DestroyableSingleton<HudManager>.Instance.KillButton.SetTarget(null);
                     if (role.MorphTimer() < 5f)
                         role.LastMorphed = DateTime.UtcNow.AddSeconds(5 - CustomGameOptions.MorphlingCd);
+                    SoundEffectsManager.play("morphlingSample");
                 }
                 else
                 {
@@ -49,6 +50,7 @@ namespace TownOfUs.ImpostorRoles.MorphlingMod
                     role.TimeRemaining = CustomGameOptions.MorphlingDuration;
                     role.MorphedPlayer = role.SampledPlayer;
                     Utils.Morph(role.Player, role.SampledPlayer, true);
+                    SoundEffectsManager.play("morphlingMorph");
                 }
 
                 return false;

@@ -24,6 +24,7 @@ namespace TownOfUs.NeutralRoles.SurvivorMod
                 role.UsesLeft--;
                 role.Vest();
                 Utils.Rpc(CustomRPC.Vest, PlayerControl.LocalPlayer.PlayerId);
+                SoundEffectsManager.play("survivorVest");
                 return false;
             }
 

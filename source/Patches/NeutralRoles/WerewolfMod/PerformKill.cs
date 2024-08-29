@@ -24,6 +24,7 @@ namespace TownOfUs.NeutralRoles.WerewolfMod
 
                 role.TimeRemaining = CustomGameOptions.RampageDuration;
                 role.Rampage();
+                SoundEffectsManager.play("werewolfRampage");
                 return false;
             }
 

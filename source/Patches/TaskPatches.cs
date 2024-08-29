@@ -1,47 +1,56 @@
+using System;
 using HarmonyLib;
 using TownOfUs.Extensions;
 
 namespace TownOfUs
 {
-    internal static class TaskPatches
-    {
-        [HarmonyPatch(typeof(GameData), nameof(GameData.RecomputeTaskCounts))]
-        private class GameData_RecomputeTaskCounts
-        {
-            private static bool Prefix(GameData __instance)
-            {
-                __instance.TotalTasks = 0;
-                __instance.CompletedTasks = 0;
-                for (var i = 0; i < __instance.AllPlayers.Count; i++)
+    [HarmonyPatch]
+    public static class TasksHandler {
+        public static Tuple<int, int> taskInfo(NetworkedPlayerInfo playerInfo) {
+            int TotalTasks = 0;
+            int CompletedTasks = 0;
+            if (!playerInfo.Disconnected && playerInfo.Tasks != null &&
+                playerInfo.Object &&
+                playerInfo.Role && playerInfo.Role.TasksCountTowardProgress &&
+                !playerInfo.Object.hasFakeTasks() && !playerInfo.Role.IsImpostor
+                ) {
+                foreach (var playerInfoTask in playerInfo.Tasks.GetFastEnumerator())
                 {
-                    var playerInfo = __instance.AllPlayers.ToArray()[i];
-                    if (!playerInfo.Disconnected && playerInfo.Tasks != null && playerInfo.Object &&
-                        (GameOptionsManager.Instance.currentNormalGameOptions.GhostsDoTasks || !playerInfo.IsDead) && !playerInfo.IsImpostor() &&
-                        !(
-                            playerInfo._object.Is(RoleEnum.Jester) || playerInfo._object.Is(RoleEnum.Amnesiac) ||
-                            playerInfo._object.Is(RoleEnum.Survivor) || playerInfo._object.Is(RoleEnum.GuardianAngel) ||
-                            playerInfo._object.Is(RoleEnum.Glitch) || playerInfo._object.Is(RoleEnum.Executioner) || playerInfo._object.Is(RoleEnum.Scavenger) ||
-                            playerInfo._object.Is(RoleEnum.Arsonist) || playerInfo._object.Is(RoleEnum.Juggernaut) ||
-                            playerInfo._object.Is(RoleEnum.Plaguebearer) || playerInfo._object.Is(RoleEnum.Pestilence) ||
-                            playerInfo._object.Is(RoleEnum.Werewolf) || playerInfo._object.Is(RoleEnum.Doomsayer) ||
-                            playerInfo._object.Is(RoleEnum.Vampire) || playerInfo._object.Is(RoleEnum.Lawyer) ||
-                            playerInfo._object.Is(RoleEnum.Phantom) || playerInfo._object.Is(RoleEnum.Haunter) || playerInfo._object.Is(RoleEnum.Mercenary)
-                        ))
-                        for (var j = 0; j < playerInfo.Tasks.Count; j++)
-                        {
-                            __instance.TotalTasks++;
-                            if (playerInfo.Tasks.ToArray()[j].Complete) __instance.CompletedTasks++;
-                        }
+                    if (playerInfoTask.Complete) CompletedTasks++;
+                    TotalTasks++;
                 }
+            }
+            return Tuple.Create(CompletedTasks, TotalTasks);
+        }
 
+        [HarmonyPatch(typeof(GameData), nameof(GameData.RecomputeTaskCounts))]
+        private static class GameDataRecomputeTaskCountsPatch {
+            private static bool Prefix(GameData __instance) {
+                var totalTasks = 0;
+                var completedTasks = 0;
+                foreach (var playerInfo in GameData.Instance.AllPlayers.GetFastEnumerator())
+                {
+                    if (playerInfo.Object 
+                        && playerInfo.Object.hasAliveKillingLover() // Tasks do not count if a Crewmate has an alive killing Lover
+                        ) continue;
+                    
+                    var (playerCompleted, playerTotal) = taskInfo(playerInfo);
+                    totalTasks += playerTotal;
+                    completedTasks += playerCompleted;
+                }
+                __instance.TotalTasks = totalTasks;
+                __instance.CompletedTasks = completedTasks;
                 return false;
             }
         }
+    }
 
+    internal static class TaskPatches
+    {
         [HarmonyPatch(typeof(Console), nameof(Console.CanUse))]
         private class Console_CanUse
         {
-            private static bool Prefix(Console __instance, [HarmonyArgument(0)] GameData.PlayerInfo playerInfo, ref float __result)
+            private static bool Prefix(Console __instance, [HarmonyArgument(0)] NetworkedPlayerInfo playerInfo, ref float __result)
             {
                 var playerControl = playerInfo.Object;
 

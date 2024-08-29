@@ -27,7 +27,6 @@ namespace TownOfUs.CrewmateRoles.MedicMod
 
         public static void GenButton(Medic role, PlayerVoteArea voteArea)
         {
-            
             var targetId = voteArea.TargetPlayerId;
             if (IsExempt(voteArea))
             {
@@ -39,7 +38,7 @@ namespace TownOfUs.CrewmateRoles.MedicMod
 
             PlayerControl playerControl = PlayerControl.AllPlayerControls.ToArray().FirstOrDefault(p => p.PlayerId == voteArea.TargetPlayerId);
 
-            if (role.LightDarkColors[playerControl.GetDefaultOutfit().ColorId] == "lighter") {
+            if (Utils.isLighterColor(playerControl.Data.DefaultOutfit.ColorId)) {
                 renderer.sprite = LighterSprite;
             } else {
                 renderer.sprite = DarkerSprite;

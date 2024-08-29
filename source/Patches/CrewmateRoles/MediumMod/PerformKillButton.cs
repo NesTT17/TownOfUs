@@ -21,6 +21,7 @@ namespace TownOfUs.CrewmateRoles.MediumMod
             if (role.MediateTimer() != 0f) return false;
 
             role.LastMediated = DateTime.UtcNow;
+            SoundEffectsManager.play("seerReveal");
 
             List<DeadPlayer> PlayersDead = Murder.KilledPlayers.GetRange(0, Murder.KilledPlayers.Count);
             if (CustomGameOptions.DeadRevealed == DeadRevealed.Newest) PlayersDead.Reverse();

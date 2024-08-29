@@ -32,22 +32,6 @@ namespace TownOfUs.Roles
             Faction = Faction.NeutralEvil;
         }
 
-        protected override void IntroPrefix(IntroCutscene._ShowTeam_d__38 __instance)
-        {
-            var scavTeam = new Il2CppSystem.Collections.Generic.List<PlayerControl>();
-            scavTeam.Add(PlayerControl.LocalPlayer);
-            __instance.teamToShow = scavTeam;
-        }
-
-        internal override bool NeutralWin(LogicGameFlowNormal __instance)
-        {
-            if (Player.Data.IsDead) return true;
-            if (!CustomGameOptions.NeutralEvilWinEndsGame) return true;
-            if (!WonByDevouring) return true;
-            Utils.EndGame();
-            return false;
-        }
-
         public float DevourTimer()
         {
             var utcNow = DateTime.UtcNow;

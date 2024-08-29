@@ -61,7 +61,7 @@ namespace TownOfUs.Roles.Modifiers
         {
             if (coordinates.ContainsKey(PlayerControl.LocalPlayer.PlayerId))
             {
-                Utils.ShowAnimatedFlash(Palette.ImpostorRed);
+                Coroutines.Start(Utils.FlashCoroutine(Palette.ImpostorRed));
                 if (Minigame.Instance)
                 {
                     try

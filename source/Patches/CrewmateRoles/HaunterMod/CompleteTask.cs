@@ -24,12 +24,12 @@ namespace TownOfUs.CrewmateRoles.HaunterMod
             {
                 if (PlayerControl.LocalPlayer.Is(RoleEnum.Haunter))
                 {
-                    Utils.ShowAnimatedFlash(role.Color);
+                    Coroutines.Start(Utils.FlashCoroutine(role.Color));
                 }
                 else if (PlayerControl.LocalPlayer.Data.IsImpostor() || (PlayerControl.LocalPlayer.Is(Faction.NeutralKilling) && CustomGameOptions.HaunterRevealsNeutrals))
                 {
                     role.Revealed = true;
-                    Utils.ShowAnimatedFlash(role.Color);
+                    Coroutines.Start(Utils.FlashCoroutine(role.Color));
                     var gameObj = new GameObject();
                     var arrow = gameObj.AddComponent<ArrowBehaviour>();
                     gameObj.transform.parent = PlayerControl.LocalPlayer.gameObject.transform;
@@ -46,11 +46,11 @@ namespace TownOfUs.CrewmateRoles.HaunterMod
                 role.CompletedTasks = true;
                 if (PlayerControl.LocalPlayer.Is(RoleEnum.Haunter))
                 {
-                    Utils.ShowAnimatedFlash(Color.white);
+                    Coroutines.Start(Utils.FlashCoroutine(Color.white));
                 }
                 else if (PlayerControl.LocalPlayer.Data.IsImpostor() || (PlayerControl.LocalPlayer.Is(Faction.NeutralKilling) && CustomGameOptions.HaunterRevealsNeutrals))
                 {
-                    Utils.ShowAnimatedFlash(Color.white);
+                    Coroutines.Start(Utils.FlashCoroutine(Color.white));
                 }
             }
         }

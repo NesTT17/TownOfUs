@@ -124,21 +124,5 @@ namespace TownOfUs.Roles
         public bool WonByGuessing = false;
 
         public List<string> PossibleGuesses => SortedColorMapping.Keys.ToList();
-
-        protected override void IntroPrefix(IntroCutscene._ShowTeam_d__38 __instance)
-        {
-            var doomTeam = new Il2CppSystem.Collections.Generic.List<PlayerControl>();
-            doomTeam.Add(PlayerControl.LocalPlayer);
-            __instance.teamToShow = doomTeam;
-        }
-
-        internal override bool NeutralWin(LogicGameFlowNormal __instance)
-        {
-            if (Player.Data.IsDead) return true;
-            if (!CustomGameOptions.NeutralEvilWinEndsGame) return true;
-            if (!WonByGuessing) return true;
-            Utils.EndGame();
-            return false;
-        }
     }
 }

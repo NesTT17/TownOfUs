@@ -29,6 +29,7 @@ namespace TownOfUs.ImpostorRoles.EscapistMod
                     DestroyableSingleton<HudManager>.Instance.KillButton.SetTarget(null);
                     if (role.EscapeTimer() < 5f)
                         role.LastEscape = DateTime.UtcNow.AddSeconds(5 - CustomGameOptions.EscapeCd);
+                    SoundEffectsManager.play("trackerTrackPlayer");
                 }
                 else
                 {
@@ -37,6 +38,7 @@ namespace TownOfUs.ImpostorRoles.EscapistMod
                     Utils.Rpc(CustomRPC.Escape, PlayerControl.LocalPlayer.PlayerId, role.EscapePoint);
                     role.LastEscape = DateTime.UtcNow;
                     Escapist.Escape(role.Player);
+                    SoundEffectsManager.play("transporterTransport");
                 }
 
                 return false;

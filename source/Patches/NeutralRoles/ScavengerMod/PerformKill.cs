@@ -36,6 +36,7 @@ namespace TownOfUs.NeutralRoles.ScavengerMod
 
             Coroutines.Start(Coroutine.DevourCoroutine(role.CurrentTarget, role));
             role.LastDevoured = DateTime.UtcNow;
+            SoundEffectsManager.play("scavengerDevour");
             return false;
         }
     }

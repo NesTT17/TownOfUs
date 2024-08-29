@@ -59,7 +59,7 @@ namespace TownOfUs.Roles
             if (PlayerControl.LocalPlayer.Is(RoleEnum.Aurial) && !Role.GetRole<Aurial>(PlayerControl.LocalPlayer).NormalVision) return;
             if (Player.GetCustomOutfitType() != CustomPlayerOutfitType.Camouflage)
             {
-                Player.SetOutfit(CustomPlayerOutfitType.Camouflage, new GameData.PlayerOutfit()
+                Player.SetOutfit(CustomPlayerOutfitType.Camouflage, new NetworkedPlayerInfo.PlayerOutfit()
                 {
                     ColorId = Player.GetDefaultOutfit().ColorId,
                     HatId = "",

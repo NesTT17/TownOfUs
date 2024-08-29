@@ -22,6 +22,7 @@ namespace TownOfUs.ImpostorRoles.SwooperMod
                 Utils.Rpc(CustomRPC.Swoop, PlayerControl.LocalPlayer.PlayerId);
                 role.TimeRemaining = CustomGameOptions.SwoopDuration;
                 role.Swoop();
+                SoundEffectsManager.play("morphlingMorph");
                 return false;
             }
 

@@ -29,33 +29,9 @@ namespace TownOfUs.Roles
             InfectedPlayers.Add(player.PlayerId);
         }
 
-        internal override bool NeutralWin(LogicGameFlowNormal __instance)
-        {
-            if (Player.Data.IsDead || Player.Data.Disconnected) return true;
-
-            if (PlayerControl.AllPlayerControls.ToArray().Count(x => !x.Data.IsDead && !x.Data.Disconnected) <= 2 &&
-                    PlayerControl.AllPlayerControls.ToArray().Count(x => !x.Data.IsDead && !x.Data.Disconnected &&
-                    (x.Data.IsImpostor() || x.Is(Faction.NeutralKilling))) == 1)
-            {
-                Utils.Rpc(CustomRPC.PlaguebearerWin, Player.PlayerId);
-                Wins();
-                Utils.EndGame();
-                return false;
-            }
-
-            return false;
-        }
-
         public void Wins()
         {
             PlaguebearerWins = true;
-        }
-
-        protected override void IntroPrefix(IntroCutscene._ShowTeam_d__38 __instance)
-        {
-            var plaguebearerTeam = new Il2CppSystem.Collections.Generic.List<PlayerControl>();
-            plaguebearerTeam.Add(PlayerControl.LocalPlayer);
-            __instance.teamToShow = plaguebearerTeam;
         }
 
         public float InfectTimer()
@@ -91,7 +67,7 @@ namespace TownOfUs.Roles
             role.IncorrectAssassinKills = killsList.IncorrectAssassinKills;
             if (Player == PlayerControl.LocalPlayer)
             {
-                Utils.ShowAnimatedFlash(Patches.Colors.Pestilence);
+                Coroutines.Start(Utils.FlashCoroutine(Patches.Colors.Pestilence));
                 role.RegenTask();
             }
         }

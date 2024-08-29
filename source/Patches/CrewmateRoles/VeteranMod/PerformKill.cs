@@ -24,6 +24,7 @@ namespace TownOfUs.CrewmateRoles.VeteranMod
                 role.UsesLeft--;
                 role.Alert();
                 Utils.Rpc(CustomRPC.Alert, PlayerControl.LocalPlayer.PlayerId);
+                SoundEffectsManager.play("veteranAlert");
                 return false;
             }
 

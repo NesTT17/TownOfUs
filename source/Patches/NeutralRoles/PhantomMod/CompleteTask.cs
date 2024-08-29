@@ -23,17 +23,13 @@ namespace TownOfUs.NeutralRoles.PhantomMod
                 role.CompletedTasks = true;
                 if (AmongUsClient.Instance.AmHost)
                 {
-                    Utils.Rpc(CustomRPC.PhantomWin, role.Player.PlayerId);
-                    if (CustomGameOptions.NeutralEvilWinEndsGame) Utils.EndGame();
-                    else
+                    if (!CustomGameOptions.NeutralEvilWinEndsGame)
                     {
                         role.Caught = true;
                         if (!PlayerControl.LocalPlayer.Is(RoleEnum.Phantom) || !CustomGameOptions.PhantomSpook) return;
                         byte[] toKill = MeetingHud.Instance.playerStates.Where(x => !Utils.PlayerById(x.TargetPlayerId).Is(RoleEnum.Pestilence)).Select(x => x.TargetPlayerId).ToArray();
-                        role.PauseEndCrit = true;
                         var pk = new PunishmentKill((x) => {
                             Utils.RpcMultiMurderPlayer(PlayerControl.LocalPlayer, x);
-                            role.PauseEndCrit = false;
                         }, (y) => {
                             return toKill.Contains(y.PlayerId);
                         });

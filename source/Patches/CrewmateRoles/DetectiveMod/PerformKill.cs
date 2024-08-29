@@ -36,9 +36,10 @@ namespace TownOfUs.CrewmateRoles.DetectiveMod
                         hasKilled = true;
                     }
                 }
-                if (hasKilled) Utils.ShowAnimatedFlash(Color.red);
-                else Utils.ShowAnimatedFlash(Color.green);
+                if (hasKilled) Coroutines.Start(Utils.FlashCoroutine(Color.red));
+                else Coroutines.Start(Utils.FlashCoroutine(Color.green));
                 role.LastExaminedPlayer = role.ClosestPlayer;
+                SoundEffectsManager.play("seerReveal");
             }
             if (interact[0] == true)
             {

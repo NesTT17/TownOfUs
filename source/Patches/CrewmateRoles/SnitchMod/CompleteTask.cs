@@ -33,12 +33,12 @@ namespace TownOfUs.CrewmateRoles.SnitchMod
                         role.RegenTask();
                         if (PlayerControl.LocalPlayer.Is(RoleEnum.Snitch))
                         {
-                            Utils.ShowAnimatedFlash(role.Color);
+                            Coroutines.Start(Utils.FlashCoroutine(role.Color));
                         }
                         else if ((PlayerControl.LocalPlayer.Data.IsImpostor() && (!PlayerControl.LocalPlayer.Is(RoleEnum.Traitor) || CustomGameOptions.SnitchSeesTraitor))
-                            || ((PlayerControl.LocalPlayer.Is(Faction.NeutralKilling)) && CustomGameOptions.SnitchSeesNeutrals))
+                            || (PlayerControl.LocalPlayer.Is(Faction.NeutralKilling) && CustomGameOptions.SnitchSeesNeutrals))
                         {
-                            Utils.ShowAnimatedFlash(role.Color);
+                            Coroutines.Start(Utils.FlashCoroutine(role.Color));
                             var gameObj = new GameObject();
                             var arrow = gameObj.AddComponent<ArrowBehaviour>();
                             gameObj.transform.parent = PlayerControl.LocalPlayer.gameObject.transform;
@@ -55,7 +55,7 @@ namespace TownOfUs.CrewmateRoles.SnitchMod
                     role.RegenTask();
                     if (PlayerControl.LocalPlayer.Is(RoleEnum.Snitch))
                     {
-                        Utils.ShowAnimatedFlash(Color.green);
+                        Coroutines.Start(Utils.FlashCoroutine(Color.green));
                         var impostors = PlayerControl.AllPlayerControls.ToArray().Where(x => x.Data.IsImpostor());
                         var traitor = PlayerControl.AllPlayerControls.ToArray().Where(x => x.Is(RoleEnum.Traitor));
                         foreach (var imp in impostors)
@@ -72,10 +72,24 @@ namespace TownOfUs.CrewmateRoles.SnitchMod
                                 role.SnitchArrows.Add(imp.PlayerId, arrow);
                             }
                         }
+                        foreach (PlayerControl player in PlayerControl.AllPlayerControls)
+                        {
+                            if (CustomGameOptions.SnitchSeesNeutrals && player.Is(Faction.NeutralKilling))
+                            {
+                                var gameObj = new GameObject();
+                                var arrow = gameObj.AddComponent<ArrowBehaviour>();
+                                gameObj.transform.parent = PlayerControl.LocalPlayer.gameObject.transform;
+                                var renderer = gameObj.AddComponent<SpriteRenderer>();
+                                renderer.sprite = Sprite;
+                                arrow.image = renderer;
+                                gameObj.layer = 5;
+                                role.SnitchArrows.Add(player.PlayerId, arrow);
+                            }
+                        }
                     }
                     else if (PlayerControl.LocalPlayer.Data.IsImpostor() || (PlayerControl.LocalPlayer.Is(Faction.NeutralKilling) && CustomGameOptions.SnitchSeesNeutrals))
                     {
-                        Utils.ShowAnimatedFlash(Color.green);
+                        Coroutines.Start(Utils.FlashCoroutine(Color.green));
                     }
 
                     break;

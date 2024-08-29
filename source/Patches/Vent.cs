@@ -16,7 +16,7 @@ namespace TownOfUs
             if(__instance.ImpostorVentButton == null || __instance.ImpostorVentButton.gameObject == null || __instance.ImpostorVentButton.IsNullOrDestroyed())
                 return;
 
-            bool active = PlayerControl.LocalPlayer != null && VentPatches.CanVent(PlayerControl.LocalPlayer, PlayerControl.LocalPlayer._cachedData) && !MeetingHud.Instance;
+            bool active = PlayerControl.LocalPlayer != null && VentPatches.CanVent(PlayerControl.LocalPlayer, PlayerControl.LocalPlayer.CachedPlayerData) && !MeetingHud.Instance;
             if(active != __instance.ImpostorVentButton.gameObject.active)
             __instance.ImpostorVentButton.gameObject.SetActive(active);
         }
@@ -25,7 +25,7 @@ namespace TownOfUs
     [HarmonyPatch(typeof(Vent), nameof(Vent.CanUse))]
     public static class VentPatches
     {
-        public static bool CanVent(PlayerControl player, GameData.PlayerInfo playerInfo)
+        public static bool CanVent(PlayerControl player, NetworkedPlayerInfo playerInfo)
         {
             if (GameOptionsManager.Instance.CurrentGameOptions.GameMode == GameModes.HideNSeek) return false;
 
@@ -64,7 +64,7 @@ namespace TownOfUs
         }
 
         public static void Postfix(Vent __instance,
-            [HarmonyArgument(0)] GameData.PlayerInfo playerInfo,
+            [HarmonyArgument(0)] NetworkedPlayerInfo playerInfo,
             [HarmonyArgument(1)] ref bool canUse,
             [HarmonyArgument(2)] ref bool couldUse,
             ref float __result)

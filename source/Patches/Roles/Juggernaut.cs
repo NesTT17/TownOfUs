@@ -23,23 +23,6 @@ namespace TownOfUs.Roles
         public bool JuggernautWins { get; set; }
         public int JuggKills { get; set; } = 0;
 
-        internal override bool NeutralWin(LogicGameFlowNormal __instance)
-        {
-            if (Player.Data.IsDead || Player.Data.Disconnected) return true;
-
-            if (PlayerControl.AllPlayerControls.ToArray().Count(x => !x.Data.IsDead && !x.Data.Disconnected) <= 2 &&
-                    PlayerControl.AllPlayerControls.ToArray().Count(x => !x.Data.IsDead && !x.Data.Disconnected &&
-                    (x.Data.IsImpostor() || x.Is(Faction.NeutralKilling))) == 1)
-            {
-                Utils.Rpc(CustomRPC.JuggernautWin, Player.PlayerId);
-                Wins();
-                Utils.EndGame();
-                return false;
-            }
-
-            return false;
-        }
-
         public void Wins()
         {
             JuggernautWins = true;
@@ -53,13 +36,6 @@ namespace TownOfUs.Roles
             var flag2 = num - (float)timeSpan.TotalMilliseconds < 0f;
             if (flag2) return 0;
             return (num - (float)timeSpan.TotalMilliseconds) / 1000f;
-        }
-
-        protected override void IntroPrefix(IntroCutscene._ShowTeam_d__38 __instance)
-        {
-            var juggTeam = new Il2CppSystem.Collections.Generic.List<PlayerControl>();
-            juggTeam.Add(PlayerControl.LocalPlayer);
-            __instance.teamToShow = juggTeam;
         }
     }
 }

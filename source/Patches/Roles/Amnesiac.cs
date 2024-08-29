@@ -22,13 +22,6 @@ namespace TownOfUs.Roles
 
         public DeadBody CurrentTarget;
 
-        protected override void IntroPrefix(IntroCutscene._ShowTeam_d__38 __instance)
-        {
-            var amnesiacTeam = new Il2CppSystem.Collections.Generic.List<PlayerControl>();
-            amnesiacTeam.Add(PlayerControl.LocalPlayer);
-            __instance.teamToShow = amnesiacTeam;
-        }
-
         public void DestroyArrow(byte targetPlayerId)
         {
             var arrow = BodyArrows.FirstOrDefault(x => x.Key == targetPlayerId);

@@ -26,6 +26,7 @@ namespace TownOfUs.NeutralRoles.DoomsayerMod
             if (interact[4] == true)
             {
                 role.LastObservedPlayer = role.ClosestPlayer;
+                SoundEffectsManager.play("seerReveal");
             }
             if (interact[0] == true)
             {

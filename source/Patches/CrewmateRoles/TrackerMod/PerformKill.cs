@@ -37,14 +37,7 @@ namespace TownOfUs.CrewmateRoles.TrackerMod
                 renderer.sprite = Sprite;
                 if (!CamouflageUnCamouflage.IsCamoed)
                 {
-                    if (RainbowUtils.IsRainbow(target.GetDefaultOutfit().ColorId))
-                    {
-                        renderer.color = RainbowUtils.Rainbow;
-                    }
-                    else
-                    {
-                        renderer.color = Palette.PlayerColors[target.GetDefaultOutfit().ColorId];
-                    }
+                    renderer.color = Palette.PlayerColors[target.GetDefaultOutfit().ColorId];
                 }
                 arrow.image = renderer;
                 gameObj.layer = 5;
@@ -52,6 +45,7 @@ namespace TownOfUs.CrewmateRoles.TrackerMod
 
                 role.TrackerArrows.Add(target.PlayerId, arrow);
                 role.UsesLeft--;
+                SoundEffectsManager.play("trackerTrackPlayer");
             }
             if (interact[0] == true)
             {

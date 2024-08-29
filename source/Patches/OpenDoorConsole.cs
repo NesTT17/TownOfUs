@@ -11,7 +11,7 @@ namespace TownOfUs
     public class OpenDoorConsoleCanUse
     {
         public static void Prefix(OpenDoorConsole __instance,
-            [HarmonyArgument(0)] GameData.PlayerInfo playerInfo,
+            [HarmonyArgument(0)] NetworkedPlayerInfo playerInfo,
             ref bool __state)
         {
             __state = false;
@@ -24,7 +24,7 @@ namespace TownOfUs
             }
         }
 
-        public static void Postfix([HarmonyArgument(0)] GameData.PlayerInfo playerInfo, ref bool __state)
+        public static void Postfix([HarmonyArgument(0)] NetworkedPlayerInfo playerInfo, ref bool __state)
         {
             if (__state)
                 playerInfo.IsDead = true;
@@ -49,7 +49,7 @@ namespace TownOfUs
     public class DoorConsoleCanUse
     {
         public static void Prefix(DoorConsole __instance,
-            [HarmonyArgument(0)] GameData.PlayerInfo playerInfo,
+            [HarmonyArgument(0)] NetworkedPlayerInfo playerInfo,
             ref bool __state)
         {
             __state = false;
@@ -62,7 +62,7 @@ namespace TownOfUs
             }
         }
 
-        public static void Postfix([HarmonyArgument(0)] GameData.PlayerInfo playerInfo, ref bool __state,
+        public static void Postfix([HarmonyArgument(0)] NetworkedPlayerInfo playerInfo, ref bool __state,
             [HarmonyArgument(1)] ref bool canUse, [HarmonyArgument(2)] ref bool couldUse)
         {
             if (__state)
@@ -99,7 +99,7 @@ namespace TownOfUs
     public class LadderCanUse
     {
         public static void Prefix(DoorConsole __instance,
-            [HarmonyArgument(0)] GameData.PlayerInfo playerInfo,
+            [HarmonyArgument(0)] NetworkedPlayerInfo playerInfo,
             ref bool __state)
         {
             __state = false;
@@ -111,7 +111,7 @@ namespace TownOfUs
             }
         }
 
-        public static void Postfix([HarmonyArgument(0)] GameData.PlayerInfo playerInfo, ref bool __state)
+        public static void Postfix([HarmonyArgument(0)] NetworkedPlayerInfo playerInfo, ref bool __state)
         {
             if (__state)
                 playerInfo.IsDead = true;
@@ -137,7 +137,7 @@ namespace TownOfUs
     {
         public static void Prefix(
             PlatformConsole __instance,
-            [HarmonyArgument(0)] GameData.PlayerInfo playerInfo,
+            [HarmonyArgument(0)] NetworkedPlayerInfo playerInfo,
             ref bool __state)
         {
             __state = false;
@@ -149,7 +149,7 @@ namespace TownOfUs
             }
         }
 
-        public static void Postfix([HarmonyArgument(0)] GameData.PlayerInfo playerInfo, ref bool __state)
+        public static void Postfix([HarmonyArgument(0)] NetworkedPlayerInfo playerInfo, ref bool __state)
         {
             if (__state)
                 playerInfo.IsDead = true;
@@ -162,7 +162,7 @@ namespace TownOfUs
     public class DeconControlUse
     {
         public static void Prefix(DoorConsole __instance,
-            [HarmonyArgument(0)] GameData.PlayerInfo playerInfo,
+            [HarmonyArgument(0)] NetworkedPlayerInfo playerInfo,
             ref bool __state)
         {
             __state = false;
@@ -175,7 +175,7 @@ namespace TownOfUs
             }
         }
 
-        public static void Postfix([HarmonyArgument(0)] GameData.PlayerInfo playerInfo, ref bool __state)
+        public static void Postfix([HarmonyArgument(0)] NetworkedPlayerInfo playerInfo, ref bool __state)
         {
             if (__state)
                 playerInfo.IsDead = true;
@@ -188,7 +188,7 @@ namespace TownOfUs
     public class ConsoleCanUsePatch
     {
         public static void Prefix(Console __instance,
-            [HarmonyArgument(0)] GameData.PlayerInfo playerInfo,
+            [HarmonyArgument(0)] NetworkedPlayerInfo playerInfo,
             ref bool __state)
         {
             __state = false;
@@ -201,7 +201,7 @@ namespace TownOfUs
             }
         }
 
-        public static void Postfix([HarmonyArgument(0)] GameData.PlayerInfo playerInfo, ref bool __state)
+        public static void Postfix([HarmonyArgument(0)] NetworkedPlayerInfo playerInfo, ref bool __state)
         {
             if (__state)
                 playerInfo.IsDead = true;

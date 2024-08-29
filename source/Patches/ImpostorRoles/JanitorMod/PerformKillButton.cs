@@ -40,6 +40,7 @@ namespace TownOfUs.ImpostorRoles.JanitorMod
                 Utils.Rpc(CustomRPC.JanitorClean, PlayerControl.LocalPlayer.PlayerId, playerId);
 
                 Coroutines.Start(Coroutine.CleanCoroutine(role.CurrentTarget, role));
+                SoundEffectsManager.play("janitorClean");
                 return false;
             }
 

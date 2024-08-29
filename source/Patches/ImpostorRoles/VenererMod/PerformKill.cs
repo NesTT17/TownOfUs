@@ -23,6 +23,7 @@ namespace TownOfUs.ImpostorRoles.VenererMod
                 role.TimeRemaining = CustomGameOptions.AbilityDuration;
                 role.KillsAtStartAbility = role.Kills;
                 role.Ability();
+                SoundEffectsManager.play("morphlingMorph");
                 return false;
             }
 

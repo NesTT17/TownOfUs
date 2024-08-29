@@ -49,6 +49,7 @@ namespace TownOfUs.NeutralRoles.MercenaryMod
                     role.ShieldedPlayer.myRend().material.SetFloat("_Outline", 0f);
                 }
                 Utils.Rpc(CustomRPC.MercProtect, PlayerControl.LocalPlayer.PlayerId, role.ClosestPlayer.PlayerId);
+                SoundEffectsManager.play("medicShield");
 
                 role.ShieldedPlayer = role.ClosestPlayer;
                 role.StartingCooldown = System.DateTime.UtcNow;
